@@ -1,0 +1,6 @@
+{
+  "name": "CREWW MOBILE AUTO DETAILING",
+  "description": "Premium mobile auto detailing services delivered right to your doorstep across the USA. Professional Exterior Detailing, Interior Detailing, and Full Detailing packages.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
