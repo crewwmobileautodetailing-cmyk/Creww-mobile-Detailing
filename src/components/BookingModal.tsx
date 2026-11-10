@@ -243,7 +243,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
       if (!emailResult.success) {
         setSubmissionError(
-          emailResult.error || 'Failed to deliver booking reservation to dispatch. Please check your connection and try again.'
+          "Something went wrong. We couldn't submit your request. Please try again."
         );
         setIsSubmitting(false);
         return;
@@ -268,9 +268,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       }
 
       setSubmittedData(submission);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setSubmissionError(msg || 'An unexpected error occurred while transmitting your reservation.');
+    } catch {
+      setSubmissionError("Something went wrong. We couldn't submit your request. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -351,11 +350,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <span className="text-[10px] font-mono text-sky-400 font-bold uppercase tracking-widest block">
                   Reservation Reference #{submittedData.id}
                 </span>
-                <h3 className="font-heading text-2xl font-black text-white uppercase tracking-tight mt-1">
-                  DISPATCH RESERVATION SUBMITTED
+                <h3 className="font-heading text-xl sm:text-2xl font-black text-white uppercase tracking-tight mt-1">
+                  Thank You! Your Request Has Been Received.
                 </h3>
-                <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
-                  Thank you, <strong className="text-white">{submittedData.fullName}</strong>. Your mobile appointment request has been scheduled. Our team will verify your route window and send your confirmation email to <strong className="text-white">{submittedData.emailAddress}</strong>.
+                <p className="text-xs text-neutral-300 mt-2 leading-relaxed">
+                  Your request has been successfully submitted to CREWW MOBILE AUTO DETAILING. Our team will review your details and contact you shortly.
                 </p>
               </div>
 
@@ -826,7 +825,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-white" />
-                      <span>Transmitting via EmailJS...</span>
+                      <span>Submitting your request...</span>
                     </>
                   ) : (
                     <span>CONFIRM RESERVATION</span>

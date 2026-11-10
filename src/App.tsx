@@ -80,7 +80,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#06070a] text-neutral-100 flex flex-col font-sans selection:bg-sky-500 selection:text-white">
+    <div className="min-h-screen bg-[#06070a] text-neutral-100 flex flex-col font-sans selection:bg-sky-500 selection:text-white w-full max-w-full overflow-x-hidden">
       {/* Transparent Cinematic Car Wash Intro Overlay (Starts automatically on initial open and refresh, with sound and replay) */}
       {showIntro && (
         <CinematicIntroLoader
@@ -100,7 +100,7 @@ export default function App() {
       />
 
       {/* Main Page Content */}
-      <main className="flex-1">
+      <main className="flex-1 w-full max-w-full overflow-x-hidden">
         {/* 1. Hero Section with Strong Automotive Visual & Action CTAs */}
         <Hero
           onBookService={() => handleOpenBooking()}

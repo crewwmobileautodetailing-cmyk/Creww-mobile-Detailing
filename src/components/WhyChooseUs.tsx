@@ -6,7 +6,7 @@ export const WhyChooseUs: React.FC = () => {
   const pillarIcons = [Droplets, Zap, Shield, Sparkles, DollarSign, UserCheck];
 
   return (
-    <section id="why-us" className="py-24 bg-[#08090e] border-b border-neutral-800 scroll-mt-20">
+    <section id="why-us" className="py-24 bg-[#08090e] border-b border-neutral-800 scroll-mt-20 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}

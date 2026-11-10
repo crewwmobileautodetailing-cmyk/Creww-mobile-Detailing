@@ -60,10 +60,10 @@ export const BUSINESS_CONFIG = {
 
   // Generated authentic automotive assets
   assets: {
-    heroCar: "/src/assets/images/hero_luxury_black_porsche_1794157850643.jpg",
-    exteriorService: "/src/assets/images/service_exterior_foam_clean_1794157870757.jpg",
-    interiorService: "/src/assets/images/service_interior_cockpit_detail_1794157851350.jpg",
-    fullDetailService: "/src/assets/images/service_full_detail_ceramic_clean_1794157870698.jpg",
+    heroCar: "/assets/images/hero_luxury_black_porsche_1794157850643.jpg",
+    exteriorService: "/assets/images/service_exterior_foam_clean_1794157870757.jpg",
+    interiorService: "/assets/images/service_interior_cockpit_detail_1794157851350.jpg",
+    fullDetailService: "/assets/images/service_full_detail_ceramic_clean_1794157870698.jpg",
   },
 
   /**
@@ -80,7 +80,7 @@ export const BUSINESS_CONFIG = {
       specialOfferPrice: 169,
       savings: 60,
       badge: "Save $60 · Limited Special",
-      image: "/src/assets/images/service_exterior_foam_clean_1794157870757.jpg",
+      image: "/assets/images/service_exterior_foam_clean_1794157870757.jpg",
       inclusions: EXTERIOR_INCLUSIONS,
       features: EXTERIOR_INCLUSIONS,
       detailedInclusions: [
@@ -113,7 +113,7 @@ export const BUSINESS_CONFIG = {
       specialOfferPrice: 189,
       savings: 40,
       badge: "Save $40 · Limited Special",
-      image: "/src/assets/images/service_interior_cockpit_detail_1794157851350.jpg",
+      image: "/assets/images/service_interior_cockpit_detail_1794157851350.jpg",
       inclusions: INTERIOR_INCLUSIONS,
       features: INTERIOR_INCLUSIONS,
       detailedInclusions: [
@@ -147,7 +147,7 @@ export const BUSINESS_CONFIG = {
       savings: 70,
       badge: "Best Value · Save $70",
       isBestValue: true,
-      image: "/src/assets/images/service_full_detail_ceramic_clean_1794157870698.jpg",
+      image: "/assets/images/service_full_detail_ceramic_clean_1794157870698.jpg",
       inclusions: FULL_INCLUSIONS,
       features: FULL_INCLUSIONS,
       detailedInclusions: [

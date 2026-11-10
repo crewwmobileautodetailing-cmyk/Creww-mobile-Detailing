@@ -52,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onBookService, onReplayIntro }) 
             : 'bg-[#06070a] border-b border-neutral-800/80 shadow-sm'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2 sm:gap-6 lg:gap-8">
           {/* Zone 1: Brand Wordmark & Official Badge */}
           <a
             href="#home"

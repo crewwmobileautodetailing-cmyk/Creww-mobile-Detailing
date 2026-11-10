@@ -80,11 +80,10 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) =
       if (res.success) {
         setIsSuccess(true);
       } else {
-        setErrorMessage(res.error || 'Failed to send message. Please try again.');
+        setErrorMessage("Something went wrong. We couldn't submit your request. Please try again.");
       }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setErrorMessage(msg || 'An unexpected network error occurred.');
+    } catch {
+      setErrorMessage("Something went wrong. We couldn't submit your request. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -155,11 +154,11 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) =
                 <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-widest block">
                   Delivered To Dispatch
                 </span>
-                <h3 className="font-heading text-2xl font-black text-white uppercase tracking-tight mt-1">
-                  MESSAGE SENT SUCCESSFULLY
+                <h3 className="font-heading text-xl sm:text-2xl font-black text-white uppercase tracking-tight mt-1">
+                  Thank You! Your Request Has Been Received.
                 </h3>
                 <p className="text-xs text-neutral-300 mt-2 max-w-sm mx-auto leading-relaxed">
-                  Thank you, <strong className="text-white">{fullName}</strong>. Your inquiry has been delivered directly to our dispatch inbox. A team member will respond to <strong className="text-white">{emailAddress}</strong> promptly.
+                  Your request has been successfully submitted to CREWW MOBILE AUTO DETAILING. Our team will review your details and contact you shortly.
                 </p>
               </div>
 
@@ -314,7 +313,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) =
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-white" />
-                      <span>Sending To Dispatch via EmailJS...</span>
+                      <span>Submitting your request...</span>
                     </>
                   ) : (
                     <>

@@ -8,7 +8,7 @@ interface AboutSectionProps {
 
 export const AboutSection: React.FC<AboutSectionProps> = ({ onBookService }) => {
   return (
-    <section id="about" className="py-24 bg-[#06070a] border-b border-neutral-800 scroll-mt-20">
+    <section id="about" className="py-24 bg-[#06070a] border-b border-neutral-800 scroll-mt-20 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">

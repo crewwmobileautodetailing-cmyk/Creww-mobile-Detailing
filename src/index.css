@@ -9,12 +9,21 @@
 
   html {
     scroll-behavior: smooth;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   body {
     font-family: var(--font-body);
     background-color: #06070a;
     color: #f8fafc;
+    max-width: 100%;
+    overflow-x: clip;
+    position: relative;
+  }
+
+  #root {
+    max-width: 100%;
     overflow-x: clip;
   }
 

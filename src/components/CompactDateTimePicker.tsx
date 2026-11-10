@@ -147,7 +147,7 @@ export const CompactDateTimePicker: React.FC<CompactDateTimePickerProps> = ({
 
           {/* Floating Calendar Popover */}
           {isDateOpen && (
-            <div className="absolute top-full left-0 mt-1.5 z-40 w-72 sm:w-80 p-3.5 bg-[#0e1017] border border-neutral-700 rounded-2xl shadow-2xl animate-fade-in">
+            <div className="absolute top-full left-0 mt-1.5 z-40 w-full sm:w-80 max-w-[calc(100vw-2.5rem)] p-3 sm:p-3.5 bg-[#0e1017] border border-neutral-700 rounded-2xl shadow-2xl animate-fade-in">
               <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-neutral-800">
                 <span className="font-heading text-base font-bold text-white uppercase tracking-wide">
                   {monthNames[viewMonth]} {viewYear}
@@ -239,7 +239,7 @@ export const CompactDateTimePicker: React.FC<CompactDateTimePickerProps> = ({
 
           {/* Floating Time Slots Popover */}
           {isTimeOpen && (
-            <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-1.5 z-40 w-64 p-3 bg-[#0e1017] border border-neutral-700 rounded-2xl shadow-2xl animate-fade-in">
+            <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-1.5 z-40 w-full sm:w-64 max-w-[calc(100vw-2.5rem)] p-3 bg-[#0e1017] border border-neutral-700 rounded-2xl shadow-2xl animate-fade-in">
               <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-2 px-1">
                 Select 12-Hour Arrival Slot:
               </span>

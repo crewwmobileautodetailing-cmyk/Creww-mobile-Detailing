@@ -31,7 +31,7 @@ export const Footer: React.FC<FooterProps> = ({
   };
 
   return (
-    <footer id="site-footer" className="bg-[#040508] border-t border-neutral-800 text-neutral-400 text-sm relative">
+    <footer id="site-footer" className="bg-[#040508] border-t border-neutral-800 text-neutral-400 text-sm relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         
         {/* Main Footer Grid */}
