@@ -95,16 +95,19 @@ app.post('/api/ai-chat', async (req: Request, res: Response): Promise<void> => {
   try {
     const { message, history } = req.body;
 
-    if (!message || typeof message !== 'string') {
+    if (!message || typeof message !== 'string' || !message.trim()) {
       res.status(400).json({ error: 'Message text is required.' });
       return;
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
 
+    // If API key is missing or placeholder, provide verified knowledge reply
     if (!apiKey || apiKey.trim() === '' || apiKey === 'MY_GEMINI_API_KEY') {
-      res.status(503).json({
-        error: 'Gemini API key is not configured. Please set GEMINI_API_KEY in the AI Studio Secrets panel.',
+      const fallbackReply = getFallbackAnswer(message);
+      res.json({
+        reply: fallbackReply,
+        notice: 'Note: To enable generative AI model features, set GEMINI_API_KEY in your environment variables.',
       });
       return;
     }
@@ -118,7 +121,7 @@ app.post('/api/ai-chat', async (req: Request, res: Response): Promise<void> => {
           const role = item.role === 'model' || item.sender === 'assistant' ? 'model' : 'user';
           contents.push({
             role,
-            parts: [{ text: item.text }],
+            parts: [{ text: item.text.trim() }],
           });
         }
       }
@@ -127,11 +130,11 @@ app.post('/api/ai-chat', async (req: Request, res: Response): Promise<void> => {
     // Append current user prompt
     contents.push({
       role: 'user',
-      parts: [{ text: message }],
+      parts: [{ text: message.trim() }],
     });
 
-    // Try gemini-3.1-flash-lite first for rapid high-throughput responses, fallback to gemini-3.8-flash if needed
-    const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash'];
+    // Model selection per SKILL.md: 'gemini-3.8-flash'
+    const candidateModels = ['gemini-3.8-flash', 'gemini-3.1-flash-lite'];
     let replyText: string | undefined;
     let lastError: any = null;
 
@@ -151,21 +154,25 @@ app.post('/api/ai-chat', async (req: Request, res: Response): Promise<void> => {
         }
       } catch (err: any) {
         lastError = err;
-        console.warn(`[AI Chat] Model ${model} encountered issue (${err?.status || err?.code}):`, err?.message || err);
+        console.warn(`[AI Chat] Model ${model} encountered issue:`, err?.message || err);
       }
     }
 
     if (replyText) {
       res.json({ reply: replyText });
     } else {
-      console.error('[AI Chat] All models failed:', lastError);
-      res.status(502).json({
-        error: lastError?.message || 'The AI detailing assistant encountered an error. Please try again.',
+      console.warn('[AI Chat] Models returned no text or encountered error. Serving verified knowledge reply:', lastError);
+      res.json({
+        reply: getFallbackAnswer(message),
+        fallback: true,
       });
     }
   } catch (error: any) {
     console.error('Error in /api/ai-chat:', error);
-    res.status(500).json({ error: 'Failed to process AI chat request.' });
+    res.json({
+      reply: getFallbackAnswer(req.body?.message || ''),
+      fallback: true,
+    });
   }
 });
 

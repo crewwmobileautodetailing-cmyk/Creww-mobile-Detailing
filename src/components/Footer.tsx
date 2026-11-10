@@ -202,15 +202,15 @@ export const Footer: React.FC<FooterProps> = ({
         </div>
 
         {/* Bottom Legal & Functional Replay Control */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-500 gap-4">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-500 gap-4 text-center sm:text-left">
           <div>
             © {currentYear} {BUSINESS_CONFIG.name}. All rights reserved.
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4">
             <button
               onClick={onReplayIntro}
-              className="flex items-center gap-1.5 text-neutral-400 hover:text-sky-400 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-neutral-400 hover:text-sky-400 transition-colors cursor-pointer py-1 min-h-[36px]"
               title="Replay cinematic car detailing intro animation"
             >
               <RotateCcw className="w-3.5 h-3.5 text-sky-400" />
@@ -219,16 +219,16 @@ export const Footer: React.FC<FooterProps> = ({
             <span>·</span>
             <button
               onClick={onOpenEmailConfig}
-              className="flex items-center gap-1.5 text-neutral-400 hover:text-sky-400 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-neutral-400 hover:text-sky-400 transition-colors cursor-pointer py-1 min-h-[36px]"
               title="Business Dispatch Log & Email Preparation"
             >
               <Settings className="w-3.5 h-3.5" />
               <span>Dispatch Portal</span>
             </button>
             <span>·</span>
-            <span>Privacy Policy</span>
+            <span className="py-1">Privacy Policy</span>
             <span>·</span>
-            <span>Terms of Service</span>
+            <span className="py-1">Terms of Service</span>
           </div>
         </div>
 

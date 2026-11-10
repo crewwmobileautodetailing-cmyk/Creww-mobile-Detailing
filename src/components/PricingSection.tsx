@@ -43,19 +43,8 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPackage,
         {/* Prominent Service Requirement Notice: WATER & ELECTRICITY REQUIRED */}
         <ServiceRequirementsNotice />
 
-        {/* Mobile Swipe Guidance Banner (visible only on mobile) */}
-        <div className="lg:hidden flex items-center justify-between mt-8 mb-2 px-1 text-xs text-neutral-400">
-          <span className="inline-flex items-center gap-1.5 text-[11px] text-neutral-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
-            <span>Swipe packages horizontally</span>
-          </span>
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-400">
-            3 Signature Packages
-          </span>
-        </div>
-
-        {/* Exactly 3 Unique Pricing Packages - Mobile horizontal swipe track, Desktop 3-column grid */}
-        <div className="flex lg:grid lg:grid-cols-3 gap-5 lg:gap-8 overflow-x-auto lg:overflow-visible snap-x snap-mandatory pb-4 lg:pb-0 items-stretch no-scrollbar touch-pan-x mt-2 lg:mt-12">
+        {/* Exactly 3 Unique Pricing Packages - Stacked vertically on mobile, 3-column grid on desktop */}
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 lg:gap-8 max-w-md sm:max-w-xl lg:max-w-none mx-auto w-full mt-8 lg:mt-12">
           {BUSINESS_CONFIG.packages.map((pkg: DetailPackage) => {
             const isBestValue = pkg.isBestValue;
             const isFullPackage = pkg.id === 'full-detailing';
@@ -67,7 +56,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPackage,
             return (
               <div
                 key={pkg.id}
-                className={`relative rounded-3xl flex flex-col justify-between transition-all duration-300 w-[84vw] sm:w-[380px] lg:w-auto shrink-0 lg:shrink snap-center ${
+                className={`relative rounded-3xl flex flex-col justify-between transition-all duration-300 w-full ${
                   isBestValue
                     ? 'bg-gradient-to-b from-[#101422] via-[#0d101a] to-[#08090e] border-2 border-sky-400/90 shadow-2xl shadow-sky-500/20 lg:-translate-y-2.5 z-10'
                     : 'bg-[#0c0e15] border border-neutral-800 hover:border-neutral-700'

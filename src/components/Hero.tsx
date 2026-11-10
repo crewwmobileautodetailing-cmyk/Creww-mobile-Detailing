@@ -30,25 +30,25 @@ export const Hero: React.FC<HeroProps> = ({ onBookService, onViewServices }) => 
               <span>Direct To Your Door</span>
             </div>
 
-            {/* Main Headline */}
-            <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl xl:text-7xl font-black text-white uppercase tracking-tight leading-[1.05]">
-              PRECISION AUTOMOTIVE RESTORATION. <br className="hidden sm:inline" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-blue-500">
+            {/* Main Headline - Natural fluid wrapping on mobile */}
+            <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl xl:text-7xl font-black text-white uppercase tracking-tight leading-[1.1]">
+              PRECISION AUTOMOTIVE RESTORATION.{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-blue-500 block sm:inline">
                 WHEREVER YOU ARE PARKED.
               </span>
             </h1>
 
             {/* Original Supporting Copy */}
-            <p className="text-sm sm:text-lg text-neutral-300 max-w-2xl leading-relaxed font-normal">
+            <p className="text-xs sm:text-base md:text-lg text-neutral-300 max-w-2xl leading-relaxed font-normal">
               CREWW deploys fully equipped mobile detailing units with commercial pressure washing, foam sanitation, and machine buffing directly to your home driveway or workplace parking. Flawless showroom results without leaving your property.
             </p>
 
             {/* Mobile Car Visual Snapshot - Visible only on mobile for immediate visual impact */}
-            <div className="lg:hidden relative rounded-2xl overflow-hidden border border-neutral-800 bg-[#0d0f17] shadow-xl my-4">
+            <div className="lg:hidden relative rounded-2xl overflow-hidden border border-neutral-800 bg-[#0d0f17] shadow-xl my-3">
               <img
                 src={BUSINESS_CONFIG.assets.heroCar}
                 alt="Immaculate black luxury performance sedan detailed by CREWW Mobile Auto Detailing"
-                className="w-full h-52 sm:h-64 object-cover"
+                className="w-full h-48 sm:h-64 object-cover"
                 referrerPolicy="no-referrer"
                 loading="eager"
               />
@@ -68,12 +68,12 @@ export const Hero: React.FC<HeroProps> = ({ onBookService, onViewServices }) => 
               </div>
             </div>
 
-            {/* Primary Action Row - High conversion prominent tap targets on mobile */}
-            <div className="pt-1 sm:pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+            {/* Primary Action Row - Full width stacked touch targets on mobile */}
+            <div className="pt-1 sm:pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4">
               <button
                 type="button"
                 onClick={onBookService}
-                className="inline-flex items-center justify-center px-7 sm:px-8 py-3.5 sm:py-4 rounded-xl text-sm sm:text-base font-bold tracking-wider uppercase text-white bg-gradient-to-r from-sky-500 via-sky-400 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-[0.98] transition-all shadow-xl shadow-sky-500/25 border border-sky-300/40 cursor-pointer whitespace-nowrap"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl text-xs sm:text-base font-bold tracking-wider uppercase text-white bg-gradient-to-r from-sky-500 via-sky-400 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-[0.98] transition-all shadow-xl shadow-sky-500/25 border border-sky-300/40 cursor-pointer min-h-[48px]"
               >
                 <span>BOOK ON-SITE DETAILING</span>
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
@@ -82,7 +82,7 @@ export const Hero: React.FC<HeroProps> = ({ onBookService, onViewServices }) => 
               <button
                 type="button"
                 onClick={onViewServices}
-                className="inline-flex items-center justify-center px-6 sm:px-7 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-semibold text-neutral-200 hover:text-white bg-[#0e111a] hover:bg-neutral-800 active:scale-[0.98] border border-neutral-700/80 transition-all cursor-pointer whitespace-nowrap"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-6 sm:px-7 py-3.5 sm:py-4 rounded-xl text-xs sm:text-base font-semibold text-neutral-200 hover:text-white bg-[#0e111a] hover:bg-neutral-800 active:scale-[0.98] border border-neutral-700/80 transition-all cursor-pointer min-h-[48px]"
               >
                 <span>VIEW 3 PACKAGES</span>
               </button>

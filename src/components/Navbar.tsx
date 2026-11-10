@@ -21,6 +21,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onBookService, onReplayIntro }) 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Prevent body scrolling when mobile drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
   const navLinks = [
     { label: 'Home', href: '#home' },
     { label: 'Area Checker', href: '#coverage' },
@@ -62,7 +74,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onBookService, onReplayIntro }) 
             <BrandLogo variant="navbar" />
           </a>
 
-          {/* Zone 2: 4–5 single-line clean text links */}
+          {/* Zone 2: 4–5 single-line clean text links for desktop */}
           <div className="hidden lg:flex items-center gap-7 text-sm font-semibold tracking-wide text-neutral-300">
             {navLinks.map((link) => (
               <a
@@ -79,12 +91,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onBookService, onReplayIntro }) 
 
           {/* Zone 3: Primary Action & Controls */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Desktop & Mobile Replay Intro Pill Button - Directly visible beside hamburger on mobile */}
+            {/* Replay Intro Pill Button - Independent and directly accessible beside hamburger */}
             {onReplayIntro && (
               <button
                 type="button"
                 onClick={onReplayIntro}
-                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-bold tracking-wide uppercase text-sky-400 bg-sky-950/40 hover:bg-sky-900/60 active:scale-95 border border-sky-500/40 hover:border-sky-400 transition-all shadow-sm shadow-sky-950/40 cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-bold tracking-wide uppercase text-sky-400 bg-sky-950/40 hover:bg-sky-900/60 active:scale-95 border border-sky-500/40 hover:border-sky-400 transition-all shadow-sm shadow-sky-950/40 cursor-pointer min-h-[38px]"
                 title="Replay cinematic car detailing intro animation"
                 aria-label="Replay Intro"
               >
@@ -96,53 +108,99 @@ export const Navbar: React.FC<NavbarProps> = ({ onBookService, onReplayIntro }) 
             {/* Desktop Primary Booking Button */}
             <button
               onClick={() => onBookService()}
-              className="hidden sm:inline-flex items-center justify-center px-5 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wider uppercase text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-[0.98] transition-all shadow-lg shadow-sky-500/20 cursor-pointer whitespace-nowrap border border-sky-400/30"
+              className="hidden sm:inline-flex items-center justify-center px-5 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wider uppercase text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-[0.98] transition-all shadow-lg shadow-sky-500/20 cursor-pointer whitespace-nowrap border border-sky-400/30 min-h-[44px]"
             >
               <Calendar className="w-4 h-4 mr-2" />
               BOOK YOUR SERVICE
             </button>
 
-            {/* Mobile Hamburger Button - Strictly separate control beside Replay Intro */}
+            {/* Mobile Hamburger Button - Minimum 44px tap target, visually balanced */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 sm:p-2.5 rounded-xl text-neutral-300 hover:text-white bg-neutral-900/80 hover:bg-neutral-800 border border-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 active:scale-95 transition-all cursor-pointer"
+              className="lg:hidden p-2.5 rounded-xl text-neutral-300 hover:text-white bg-neutral-900/90 hover:bg-neutral-800 border border-neutral-700/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 active:scale-95 transition-all cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Toggle navigation menu"
               aria-expanded={mobileMenuOpen}
             >
-              {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Dropdown Menu (Strictly navigation links + primary action, NO Replay Intro inside) */}
+        {/* Professional Mobile Navigation Drawer with Backdrop Blur */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-[#0c0e15] border-b border-neutral-800 px-4 pt-3 pb-6 space-y-3 animate-fade-in shadow-2xl">
-            <div className="grid grid-cols-1 gap-1">
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.href)}
-                  className="flex items-center justify-between px-3.5 py-3 rounded-xl text-base font-semibold text-neutral-200 hover:bg-neutral-800 hover:text-sky-400 transition-colors"
-                >
-                  <span>{link.label}</span>
-                  <ChevronRight className="w-4 h-4 text-neutral-500" />
-                </a>
-              ))}
-            </div>
+          <div className="fixed inset-0 z-50 lg:hidden">
+            {/* Backdrop overlay */}
+            <div
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm animate-fade-in"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
 
-            <div className="pt-2 border-t border-neutral-800">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onBookService();
-                }}
-                className="w-full flex items-center justify-center px-5 py-3.5 rounded-xl text-sm font-bold tracking-wider uppercase text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 transition-all shadow-md shadow-sky-500/20"
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                BOOK YOUR SERVICE
-              </button>
+            {/* Slide-in Drawer */}
+            <div className="fixed top-0 right-0 bottom-0 w-[300px] max-w-[85vw] bg-[#0a0c12] border-l border-neutral-800 shadow-2xl flex flex-col justify-between p-5 z-50 animate-modal-content">
+              <div>
+                {/* Drawer Header */}
+                <div className="flex items-center justify-between pb-4 border-b border-neutral-800/80">
+                  <div className="flex items-center gap-2.5">
+                    <img
+                      src={BUSINESS_CONFIG.officialBadgePath}
+                      alt="CREWW Badge"
+                      className="h-8 w-auto object-contain"
+                    />
+                    <div>
+                      <span className="font-heading text-lg font-black text-white uppercase tracking-tight block leading-tight">
+                        CREWW USA
+                      </span>
+                      <span className="text-[10px] text-sky-400 uppercase tracking-widest font-mono">
+                        Mobile Detailing
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800/80 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
+                    aria-label="Close navigation menu"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Mobile Navigation Links */}
+                <nav className="py-4 space-y-1">
+                  {navLinks.map((link) => (
+                    <a
+                      key={link.label}
+                      href={link.href}
+                      onClick={(e) => handleNavClick(e, link.href)}
+                      className="flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold text-neutral-200 hover:text-white hover:bg-[#121622] active:bg-sky-500/20 active:text-sky-300 transition-all min-h-[48px]"
+                    >
+                      <span>{link.label}</span>
+                      <ChevronRight className="w-4 h-4 text-neutral-500" />
+                    </a>
+                  ))}
+                </nav>
+              </div>
+
+              {/* Drawer Bottom Action Block */}
+              <div className="pt-4 border-t border-neutral-800/80 space-y-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onBookService();
+                  }}
+                  className="w-full flex items-center justify-center px-4 py-3.5 rounded-xl text-xs font-bold tracking-wider uppercase text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-[0.98] transition-all shadow-lg shadow-sky-500/20 min-h-[48px] cursor-pointer"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  BOOK ON-SITE SERVICE
+                </button>
+
+                <p className="text-[11px] text-neutral-500 text-center">
+                  Self-contained units dispatched to your location
+                </p>
+              </div>
             </div>
           </div>
         )}

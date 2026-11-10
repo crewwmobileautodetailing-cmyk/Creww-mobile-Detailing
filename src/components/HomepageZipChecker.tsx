@@ -73,7 +73,7 @@ export const HomepageZipChecker: React.FC<HomepageZipCheckerProps> = ({ onValida
             <button
               type="submit"
               disabled={isChecking || zipInput.length === 0}
-              className="px-6 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 whitespace-nowrap shadow-md shadow-sky-500/20"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 whitespace-nowrap shadow-md shadow-sky-500/20 min-h-[48px]"
             >
               {isChecking ? (
                 <>
