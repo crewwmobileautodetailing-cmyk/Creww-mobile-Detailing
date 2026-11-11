@@ -36,8 +36,10 @@ export interface BookingSubmissionPayload {
   city: string;
   state: string;
   zipCode: string;
-  waterConfirmed: boolean;
-  electricityConfirmed: boolean;
+  waterAvailability: 'yes' | 'no';
+  electricityAvailability: 'yes' | 'no';
+  waterConfirmed?: boolean;
+  electricityConfirmed?: boolean;
   additionalNotes?: string;
 }
 
@@ -71,15 +73,15 @@ export async function sendBookingEmails(
 ): Promise<BookingEmailResult> {
   const vehicleSummary = `${booking.vehicleYear} ${booking.vehicleMake} ${booking.vehicleModel}`.trim();
   const fullAddress = `${booking.serviceAddress}, ${booking.city}, ${booking.state} ${booking.zipCode}`.trim();
-  const waterText = booking.waterConfirmed
-    ? 'Confirmed Available (Water Spigot on-site)'
-    : 'Not Confirmed';
-  const electricityText = booking.electricityConfirmed
-    ? 'Confirmed Available (120V Outlet on-site)'
-    : 'Not Confirmed';
+  const waterText = booking.waterAvailability === 'yes' || booking.waterConfirmed === true
+    ? 'Yes, water is available.'
+    : 'No, water is not available.';
+  const electricityText = booking.electricityAvailability === 'yes' || booking.electricityConfirmed === true
+    ? 'Yes, electricity is available.'
+    : 'No, electricity is not available.';
 
   const readableSummary = `
-NEW BOOKING RESERVATION #${booking.id}
+NEW BOOKING REQUEST #${booking.id}
 ----------------------------------------
 Customer: ${booking.fullName}
 Phone: ${booking.phoneNumber}
@@ -88,7 +90,7 @@ Email: ${booking.emailAddress}
 Service: ${booking.serviceName}
 Price: $${booking.price} (Saved $${booking.savings})
 Preferred Date: ${booking.preferredDate}
-Preferred Time: ${booking.preferredTime}
+Preferred Time: ${booking.preferredTime} (Subject to confirmation)
 
 Vehicle: ${vehicleSummary}
 Service Address: ${fullAddress}
@@ -148,7 +150,7 @@ Dispatched via CREWW Mobile Auto Detailing Portal
     time: booking.preferredTime,
     preferred_time: booking.preferredTime,
     preferredTime: booking.preferredTime,
-    appointment_time: `${booking.preferredDate} at ${booking.preferredTime}`,
+    appointment_time: `${booking.preferredDate} at ${booking.preferredTime} (Preferred Time - Subject to Confirmation)`,
 
     // Location
     address: fullAddress,
@@ -165,9 +167,11 @@ Dispatched via CREWW Mobile Auto Detailing Portal
     // Requirements
     water: waterText,
     water_availability: waterText,
+    waterAvailability: waterText,
     water_confirmed: waterText,
     electricity: electricityText,
     electricity_availability: electricityText,
+    electricityAvailability: electricityText,
     electricity_confirmed: electricityText,
 
     // Notes & Message
@@ -181,8 +185,8 @@ Dispatched via CREWW Mobile Auto Detailing Portal
     // Metadata
     booking_id: booking.id,
     reference_id: booking.id,
-    form_type: 'Mobile Detailing Booking Reservation',
-    subject: `New On-Site Booking: ${booking.serviceName} - ${booking.fullName} (${vehicleSummary})`,
+    form_type: 'Mobile Detailing Booking Request',
+    subject: `New On-Site Booking Request: ${booking.serviceName} - ${booking.fullName} (${vehicleSummary})`,
   };
 
   // STEP 1: Send Admin Notification
@@ -226,18 +230,22 @@ Dispatched via CREWW Mobile Auto Detailing Portal
     price: `$${booking.price}`,
     date: booking.preferredDate,
     time: booking.preferredTime,
-    appointment_time: `${booking.preferredDate} at ${booking.preferredTime}`,
+    preferred_date: booking.preferredDate,
+    preferred_time: booking.preferredTime,
+    appointment_time: `${booking.preferredDate} at ${booking.preferredTime} (Subject to Confirmation)`,
     vehicle: vehicleSummary,
     address: fullAddress,
     water: waterText,
+    water_availability: waterText,
     electricity: electricityText,
+    electricity_availability: electricityText,
     notes: booking.additionalNotes?.trim() || 'None',
 
     // Sender details
     company_name: BUSINESS_CONFIG.name,
     company_email: BUSINESS_CONFIG.email,
     reply_to: BUSINESS_CONFIG.email,
-    message: `Thank you for choosing ${BUSINESS_CONFIG.name}. Your appointment request for ${booking.serviceName} on ${booking.preferredDate} at ${booking.preferredTime} has been received. Our mobile detailing rig will arrive on-site with purified deionized water, specialized machine polishers, and steam extraction. Payment is collected only after your personal vehicle walkthrough inspection.`,
+    message: `Thank you for choosing ${BUSINESS_CONFIG.name}. Your booking request for ${booking.serviceName} with preferred appointment time of ${booking.preferredDate} at ${booking.preferredTime} has been received. Please note that your preferred date and time are subject to confirmation by our team. Our dispatch specialists will review your location details and follow up with you shortly. Payment is collected only after your personal vehicle walkthrough inspection.`,
   };
 
   try {

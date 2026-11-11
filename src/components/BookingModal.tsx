@@ -24,8 +24,10 @@ export interface BookingSubmissionData {
   city: string;
   state: string;
   zipCode: string;
-  waterConfirmed: boolean;
-  electricityConfirmed: boolean;
+  waterAvailability: 'yes' | 'no';
+  electricityAvailability: 'yes' | 'no';
+  waterConfirmed?: boolean;
+  electricityConfirmed?: boolean;
   additionalNotes: string;
   emailStatus?: {
     adminSent: boolean;
@@ -72,7 +74,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const defaultDate = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
 
   const [preferredDate, setPreferredDate] = useState(defaultDate);
-  const [preferredTime, setPreferredTime] = useState('09:30 AM');
+  const [preferredTime, setPreferredTime] = useState('10:00 AM');
   const [serviceAddress, setServiceAddress] = useState('');
   const [city, setCity] = useState(initialCity || '');
   const [state, setState] = useState(initialState || '');
@@ -81,9 +83,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   // Additional notes
   const [additionalNotes, setAdditionalNotes] = useState('');
 
-  // Service requirements confirmation (Mandatory)
-  const [waterConfirmed, setWaterConfirmed] = useState(false);
-  const [electricityConfirmed, setElectricityConfirmed] = useState(false);
+  // Water & Electricity Availability selections (Required, but 'no' never blocks booking)
+  const [waterAvailability, setWaterAvailability] = useState<'yes' | 'no' | ''>('');
+  const [electricityAvailability, setElectricityAvailability] = useState<'yes' | 'no' | ''>('');
 
   // Status & validation states
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -191,12 +193,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       }
     }
 
-    // Water & Electricity Location Requirements (Mandatory)
-    if (!waterConfirmed) {
-      errs.waterConfirmed = 'Please confirm that water will be available at your service location.';
+    // Preferred Date & Time Validation
+    if (!preferredDate) {
+      errs.preferredDate = 'Please select your preferred date.';
     }
-    if (!electricityConfirmed) {
-      errs.electricityConfirmed = 'Please confirm that electricity will be available at your service location.';
+    if (!preferredTime || !preferredTime.trim()) {
+      errs.preferredTime = 'Please select or enter your preferred time.';
+    }
+
+    // Water & Electricity Availability Selections (Required fields, but 'no' never blocks submission)
+    if (!waterAvailability) {
+      errs.waterAvailability = 'Please select water availability.';
+    }
+    if (!electricityAvailability) {
+      errs.electricityAvailability = 'Please select electricity availability.';
     }
 
     setErrors(errs);
@@ -232,8 +242,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       city: city.trim(),
       state: state.trim(),
       zipCode: zipCode.trim(),
-      waterConfirmed,
-      electricityConfirmed,
+      waterAvailability: waterAvailability as 'yes' | 'no',
+      electricityAvailability: electricityAvailability as 'yes' | 'no',
+      waterConfirmed: waterAvailability === 'yes',
+      electricityConfirmed: electricityAvailability === 'yes',
       additionalNotes: additionalNotes.trim(),
     };
 
@@ -290,9 +302,31 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     setZipCode('');
     setZipValidationStatus(null);
     setAdditionalNotes('');
-    setWaterConfirmed(false);
-    setElectricityConfirmed(false);
+    setWaterAvailability('');
+    setElectricityAvailability('');
     setErrors({});
+  };
+
+  const handleSelectWater = (val: 'yes' | 'no') => {
+    setWaterAvailability(val);
+    if (errors.waterAvailability) {
+      setErrors((prev) => {
+        const upd = { ...prev };
+        delete upd.waterAvailability;
+        return upd;
+      });
+    }
+  };
+
+  const handleSelectElectricity = (val: 'yes' | 'no') => {
+    setElectricityAvailability(val);
+    if (errors.electricityAvailability) {
+      setErrors((prev) => {
+        const upd = { ...prev };
+        delete upd.electricityAvailability;
+        return upd;
+      });
+    }
   };
 
   if (!isOpen) return null;
@@ -371,9 +405,22 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-neutral-800/80 pb-1.5">
-                  <span className="text-neutral-400">Scheduled Time:</span>
-                  <span className="font-medium text-white">
+                  <span className="text-neutral-400">Preferred Appointment:</span>
+                  <span className="font-medium text-white text-right">
                     {submittedData.preferredDate} at {submittedData.preferredTime}
+                    <span className="block text-[10px] text-sky-400 font-normal">Subject to confirmation by our team</span>
+                  </span>
+                </div>
+                <div className="flex justify-between border-b border-neutral-800/80 pb-1.5">
+                  <span className="text-neutral-400">Water Availability:</span>
+                  <span className={`font-medium ${submittedData.waterAvailability === 'yes' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    {submittedData.waterAvailability === 'yes' ? 'Yes, water is available.' : 'No, water is not available.'}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b border-neutral-800/80 pb-1.5">
+                  <span className="text-neutral-400">Electricity Availability:</span>
+                  <span className={`font-medium ${submittedData.electricityAvailability === 'yes' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    {submittedData.electricityAvailability === 'yes' ? 'Yes, electricity is available.' : 'No, electricity is not available.'}
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-neutral-800/80 pb-1.5">
@@ -599,14 +646,33 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </div>
               </div>
 
-              {/* Compact Date & Time Popovers */}
+              {/* Customer-Selected Appointment Date & Time */}
               <div>
                 <CompactDateTimePicker
                   selectedDate={preferredDate}
                   selectedTime={preferredTime}
-                  onDateChange={(d) => setPreferredDate(d)}
-                  onTimeChange={(t) => setPreferredTime(t)}
+                  onDateChange={(d) => {
+                    setPreferredDate(d);
+                    if (errors.preferredDate) {
+                      setErrors((prev) => {
+                        const upd = { ...prev };
+                        delete upd.preferredDate;
+                        return upd;
+                      });
+                    }
+                  }}
+                  onTimeChange={(t) => {
+                    setPreferredTime(t);
+                    if (errors.preferredTime) {
+                      setErrors((prev) => {
+                        const upd = { ...prev };
+                        delete upd.preferredTime;
+                        return upd;
+                      });
+                    }
+                  }}
                   error={errors.preferredDate}
+                  timeError={errors.preferredTime}
                 />
               </div>
 
@@ -725,76 +791,152 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 />
               </div>
 
-              {/* Water & Electricity Location Requirements (Mandatory Confirmation) */}
-              <div className="p-3.5 rounded-xl bg-gradient-to-r from-sky-950/40 via-[#0a0d14] to-blue-950/40 border border-sky-500/30 space-y-2.5">
+              {/* Water & Electricity Location Availability (Required fields, 'No' never blocks submission) */}
+              <div className="p-3.5 rounded-xl bg-gradient-to-r from-sky-950/40 via-[#0a0d14] to-blue-950/40 border border-sky-500/30 space-y-3.5">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-md bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 text-xs font-bold shrink-0">
                     !
                   </div>
-                  <h4 className="text-[11px] font-bold uppercase tracking-wider text-white">
-                    Service Location Requirements (Water & Electricity)
-                  </h4>
+                  <div>
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-white">
+                      Service Location Utilities
+                    </h4>
+                    <p className="text-[10px] text-neutral-400">
+                      Please let us know your utility access. Selecting &ldquo;No&rdquo; will not prevent your booking.
+                    </p>
+                  </div>
                 </div>
-                <p className="text-[11px] text-neutral-300 leading-relaxed">
-                  Our mobile detailing service requires access to water and electricity at your service location. Please confirm both utilities will be accessible for our technicians:
-                </p>
 
-                <div className="space-y-2 pt-1">
-                  {/* Water Checkbox */}
-                  <label className="flex items-start gap-2.5 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={waterConfirmed}
-                      onChange={(e) => {
-                        setWaterConfirmed(e.target.checked);
-                        if (e.target.checked && errors.waterConfirmed) {
-                          setErrors((prev) => {
-                            const upd = { ...prev };
-                            delete upd.waterConfirmed;
-                            return upd;
-                          });
-                        }
-                      }}
-                      className="mt-0.5 h-4 w-4 rounded border-neutral-700 bg-neutral-900 text-sky-500 focus:ring-sky-500 focus:ring-offset-0 cursor-pointer accent-sky-500 shrink-0"
-                    />
-                    <span className="text-xs text-neutral-200 group-hover:text-white select-none transition-colors">
-                      I confirm that <strong className="text-sky-300">water</strong> will be available at my service location.
+                {/* Water Availability Field */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5 min-h-[18px]">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-300">
+                      Water Availability *
                     </span>
-                  </label>
-                  {errors.waterConfirmed && (
-                    <p className="text-red-400 text-[10px] pl-6.5 font-medium flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3 shrink-0" />
-                      {errors.waterConfirmed}
-                    </p>
-                  )}
+                    {errors.waterAvailability && (
+                      <span className="text-red-400 text-[10px] flex items-center gap-1 font-medium">
+                        <AlertCircle className="w-2.5 h-2.5 shrink-0" />
+                        {errors.waterAvailability}
+                      </span>
+                    )}
+                  </div>
+                  <div role="radiogroup" aria-label="Water Availability" className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={waterAvailability === 'yes'}
+                      onClick={() => handleSelectWater('yes')}
+                      className={`w-full flex items-center gap-2.5 p-2.5 rounded-lg border text-left cursor-pointer transition-colors select-none ${
+                        waterAvailability === 'yes'
+                          ? 'bg-sky-500/15 border-sky-400 text-white shadow-sm shadow-sky-500/20'
+                          : 'bg-[#07080b] border-neutral-700/80 text-neutral-300 hover:border-neutral-600 hover:text-white'
+                      }`}
+                    >
+                      <span
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                          waterAvailability === 'yes'
+                            ? 'border-sky-400 bg-sky-500'
+                            : 'border-neutral-600 bg-neutral-900'
+                        }`}
+                      >
+                        {waterAvailability === 'yes' && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                        )}
+                      </span>
+                      <span className="text-xs font-medium">Yes, water is available.</span>
+                    </button>
 
-                  {/* Electricity Checkbox */}
-                  <label className="flex items-start gap-2.5 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={electricityConfirmed}
-                      onChange={(e) => {
-                        setElectricityConfirmed(e.target.checked);
-                        if (e.target.checked && errors.electricityConfirmed) {
-                          setErrors((prev) => {
-                            const upd = { ...prev };
-                            delete upd.electricityConfirmed;
-                            return upd;
-                          });
-                        }
-                      }}
-                      className="mt-0.5 h-4 w-4 rounded border-neutral-700 bg-neutral-900 text-sky-500 focus:ring-sky-500 focus:ring-offset-0 cursor-pointer accent-sky-500 shrink-0"
-                    />
-                    <span className="text-xs text-neutral-200 group-hover:text-white select-none transition-colors">
-                      I confirm that <strong className="text-sky-300">electricity</strong> will be available at my service location.
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={waterAvailability === 'no'}
+                      onClick={() => handleSelectWater('no')}
+                      className={`w-full flex items-center gap-2.5 p-2.5 rounded-lg border text-left cursor-pointer transition-colors select-none ${
+                        waterAvailability === 'no'
+                          ? 'bg-sky-500/15 border-sky-400 text-white shadow-sm shadow-sky-500/20'
+                          : 'bg-[#07080b] border-neutral-700/80 text-neutral-300 hover:border-neutral-600 hover:text-white'
+                      }`}
+                    >
+                      <span
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                          waterAvailability === 'no'
+                            ? 'border-sky-400 bg-sky-500'
+                            : 'border-neutral-600 bg-neutral-900'
+                        }`}
+                      >
+                        {waterAvailability === 'no' && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                        )}
+                      </span>
+                      <span className="text-xs font-medium">No, water is not available.</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Electricity Availability Field */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5 min-h-[18px]">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-300">
+                      Electricity Availability *
                     </span>
-                  </label>
-                  {errors.electricityConfirmed && (
-                    <p className="text-red-400 text-[10px] pl-6.5 font-medium flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3 shrink-0" />
-                      {errors.electricityConfirmed}
-                    </p>
-                  )}
+                    {errors.electricityAvailability && (
+                      <span className="text-red-400 text-[10px] flex items-center gap-1 font-medium">
+                        <AlertCircle className="w-2.5 h-2.5 shrink-0" />
+                        {errors.electricityAvailability}
+                      </span>
+                    )}
+                  </div>
+                  <div role="radiogroup" aria-label="Electricity Availability" className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={electricityAvailability === 'yes'}
+                      onClick={() => handleSelectElectricity('yes')}
+                      className={`w-full flex items-center gap-2.5 p-2.5 rounded-lg border text-left cursor-pointer transition-colors select-none ${
+                        electricityAvailability === 'yes'
+                          ? 'bg-sky-500/15 border-sky-400 text-white shadow-sm shadow-sky-500/20'
+                          : 'bg-[#07080b] border-neutral-700/80 text-neutral-300 hover:border-neutral-600 hover:text-white'
+                      }`}
+                    >
+                      <span
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                          electricityAvailability === 'yes'
+                            ? 'border-sky-400 bg-sky-500'
+                            : 'border-neutral-600 bg-neutral-900'
+                        }`}
+                      >
+                        {electricityAvailability === 'yes' && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                        )}
+                      </span>
+                      <span className="text-xs font-medium">Yes, electricity is available.</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={electricityAvailability === 'no'}
+                      onClick={() => handleSelectElectricity('no')}
+                      className={`w-full flex items-center gap-2.5 p-2.5 rounded-lg border text-left cursor-pointer transition-colors select-none ${
+                        electricityAvailability === 'no'
+                          ? 'bg-sky-500/15 border-sky-400 text-white shadow-sm shadow-sky-500/20'
+                          : 'bg-[#07080b] border-neutral-700/80 text-neutral-300 hover:border-neutral-600 hover:text-white'
+                      }`}
+                    >
+                      <span
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                          electricityAvailability === 'no'
+                            ? 'border-sky-400 bg-sky-500'
+                            : 'border-neutral-600 bg-neutral-900'
+                        }`}
+                      >
+                        {electricityAvailability === 'no' && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                        )}
+                      </span>
+                      <span className="text-xs font-medium">No, electricity is not available.</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 

@@ -224,23 +224,11 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
 
       let replyText: string = data.reply;
 
-      // If server returned no reply or an error was reported, generate verified official knowledge answer
       if (!replyText) {
-        const q = query.toLowerCase();
-        if (q.includes('price') || q.includes('cost') || q.includes('rate') || q.includes('how much')) {
-          replyText = "We offer 3 published packages with active promotional discounts:\n\n• **Exterior Detailing:** **$169** (Regular $229 · Save $60)\n• **Interior Detailing:** **$189** (Regular $229 · Save $40)\n• **Full Interior & Exterior Detailing:** **$229** (Regular $299 · Save $70 · **Best Value**)\n\nZero hidden fees! Payment is due only after your personal walkthrough inspection upon completion.";
-        } else if (q.includes('exterior') || (q.includes('outside') && !q.includes('inside'))) {
-          replyText = "Our **Exterior Detailing** ($169 special offer) includes:\n\n• Pressure washer rinse\n• Foam soap hand wash\n• Buffer wax gloss seal\n• Tire degreasing & wheel dressing\n• Door jambs and trunk seals\n• Microfiber towel drying";
-        } else if (q.includes('interior') || (q.includes('inside') && !q.includes('outside'))) {
-          replyText = "Our **Interior Detailing** ($189 special offer) includes:\n\n• Vacuuming all carpets and seats\n• Wiping down and dressing interior surfaces\n• Leather conditioning treatment\n• Steam shampooing stained areas\n• Pet hair removal\n• Cleaning interior windows";
-        } else if (q.includes('full') || q.includes('both')) {
-          replyText = "Our **Full Interior & Exterior Detailing** package is our **Best Value at $229** (Regular $299 · Save $70)!\n\nIt combines all 7 exterior decontamination steps with all 7 interior deep cleaning treatments—14 total master treatments delivered directly to your driveway!";
-        } else if (q.includes('water') || q.includes('electric') || q.includes('power') || q.includes('need') || q.includes('require')) {
-          replyText = "**Service Location Requirements:**\nYes, our mobile detailing service requires access to two utilities at your location:\n\n1. **Water:** An accessible outdoor water spigot or hose connection.\n2. **Electricity:** A standard 120V outdoor electrical outlet.\n\nBoth water and electricity confirmations are required when scheduling your appointment.";
-        } else if (q.includes('book') || q.includes('schedule') || q.includes('appointment')) {
-          replyText = "Booking is quick and simple!\n\n1. Tap any **'BOOK YOUR SERVICE'** button on the page.\n2. Select your package, appointment date, and preferred arrival time.\n3. Enter your vehicle details and service address.\n4. Confirm your water and electricity access.\n\nNo advance payment is needed—you pay after inspecting your clean vehicle!";
+        if (data.error) {
+          replyText = data.error;
         } else {
-          replyText = "Welcome to **CREWW MOBILE AUTO DETAILING**! We bring precision car detailing right to your driveway anywhere in the USA. We offer Exterior Detailing ($169), Interior Detailing ($189), and Full Detailing ($229 · Best Value). Just ensure water and power are accessible at your location, and click **'BOOK YOUR SERVICE'** below to schedule!";
+          replyText = "I'm having a brief connection hiccup with the AI service. Please try asking again in a moment or tap **'BOOK YOUR SERVICE'** below to reserve your detailing slot!";
         }
       }
 
@@ -258,11 +246,11 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
 
       setMessages((prev) => [...prev, botMsg]);
     } catch (networkErr: any) {
-      console.warn('Chat network error, providing verified business answer:', networkErr);
+      console.warn('[AI Assistant] Network communication error:', networkErr);
       const botMsg: Message = {
         id: `a-${Date.now()}`,
         sender: 'assistant',
-        text: "At **CREWW MOBILE AUTO DETAILING**, we provide 100% on-site mobile detailing across the USA! We offer **Exterior Detailing ($169)**, **Interior Detailing ($189)**, and **Full Interior & Exterior Detailing ($229 · Best Value)**. We require water and electricity at your location. Tap **'Book Your Service'** below to pick your date and time!",
+        text: "Unable to reach the AI assistant server at this moment. Please check your network connection or tap **'BOOK YOUR SERVICE'** below to book directly!",
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         showBookButton: true,
       };
