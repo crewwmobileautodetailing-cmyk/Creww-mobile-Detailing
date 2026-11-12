@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { X, CheckCircle2, ShieldCheck, Tag, Loader2, MapPin, AlertCircle, Mail, Send } from 'lucide-react';
 import { BUSINESS_CONFIG } from '../config/businessConfig';
 import { CompactDateTimePicker } from './CompactDateTimePicker';
-import { validateUsZipCode } from '../services/zipValidationService';
 import { sendBookingEmails } from '../services/emailService';
 
 export interface BookingSubmissionData {
@@ -90,8 +89,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   // Status & validation states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
-  const [isValidatingZip, setIsValidatingZip] = useState(false);
-  const [zipValidationStatus, setZipValidationStatus] = useState<string | null>(null);
   const [submittedData, setSubmittedData] = useState<BookingSubmissionData | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -130,30 +127,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     (p) => p.id === selectedServiceId
   ) || BUSINESS_CONFIG.packages[2];
 
-  // Real-time ZIP Code verification handler when leaving ZIP field
-  const handleZipBlur = async () => {
-    const clean = zipCode.replace(/\D/g, '');
-    if (clean.length === 5) {
-      setIsValidatingZip(true);
-      const res = await validateUsZipCode(clean);
-      setIsValidatingZip(false);
-
-      if (!res.isValidUsZip) {
-        setErrors((prev) => ({ ...prev, zipCode: res.message }));
-        setZipValidationStatus(null);
-      } else {
-        setErrors((prev) => {
-          const updated = { ...prev };
-          delete updated.zipCode;
-          return updated;
-        });
-        if (res.city && !city) setCity(res.city);
-        if (res.stateAbbr && !state) setState(res.stateAbbr);
-        setZipValidationStatus(res.isServiceable ? 'Standard Service Zone' : 'Custom Route Zone');
-      }
-    }
-  };
-
   const validate = async (): Promise<boolean> => {
     const errs: Record<string, string> = {};
 
@@ -180,17 +153,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     if (!city.trim()) errs.city = 'City is required.';
     if (!state.trim()) errs.state = 'State is required.';
 
-    // Strict US ZIP Validation
-    const cleanZip = zipCode.replace(/\D/g, '');
-    if (!cleanZip || cleanZip.length !== 5) {
-      errs.zipCode = 'Valid 5-digit US ZIP code is required.';
-    } else {
-      setIsValidatingZip(true);
-      const zipRes = await validateUsZipCode(cleanZip);
-      setIsValidatingZip(false);
-      if (!zipRes.isValidUsZip) {
-        errs.zipCode = zipRes.message;
-      }
+    // Normal ZIP Code Validation (Required field, strictly independent with no geographic restrictions)
+    if (!zipCode.trim()) {
+      errs.zipCode = 'ZIP code is required.';
     }
 
     // Preferred Date & Time Validation
@@ -300,7 +265,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     setCity('');
     setState('');
     setZipCode('');
-    setZipValidationStatus(null);
     setAdditionalNotes('');
     setWaterAvailability('');
     setElectricityAvailability('');
@@ -698,26 +662,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               {/* Real US ZIP Code, City, State in 3 columns */}
               <div className="grid grid-cols-5 gap-2.5">
                 <div className="col-span-2">
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
-                      US ZIP Code *
-                    </label>
-                    {isValidatingZip && (
-                      <span className="flex items-center gap-1 text-[9px] text-sky-400">
-                        <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                        Verifying...
-                      </span>
-                    )}
-                  </div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1">
+                    ZIP Code *
+                  </label>
                   <input
                     type="text"
-                    maxLength={5}
-                    inputMode="numeric"
+                    maxLength={10}
                     value={zipCode}
-                    onBlur={handleZipBlur}
                     onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '');
-                      setZipCode(val);
+                      setZipCode(e.target.value);
                       if (errors.zipCode) {
                         setErrors((prev) => {
                           const updated = { ...prev };
@@ -726,16 +679,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                         });
                       }
                     }}
-                    placeholder="90210"
+                    placeholder="e.g. 90210"
                     className={`w-full px-3 py-2 rounded-lg bg-[#07080b] border text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono tracking-wider ${
                       errors.zipCode ? 'border-red-500' : 'border-neutral-700'
                     }`}
                   />
                   {errors.zipCode && (
                     <p className="text-red-400 text-[10px] mt-0.5 leading-tight">{errors.zipCode}</p>
-                  )}
-                  {zipValidationStatus && !errors.zipCode && (
-                    <p className="text-emerald-400 text-[10px] mt-0.5 font-medium">✓ {zipValidationStatus}</p>
                   )}
                 </div>
 
@@ -961,7 +911,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
                 <button
                   type="submit"
-                  disabled={isSubmitting || isValidatingZip}
+                  disabled={isSubmitting}
                   className="w-full sm:w-auto px-7 py-3.5 sm:py-3 rounded-xl text-xs font-bold tracking-wider uppercase text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-[0.98] transition-all shadow-md shadow-sky-500/25 border border-sky-400/30 cursor-pointer disabled:opacity-50 whitespace-nowrap min-h-[44px] flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
