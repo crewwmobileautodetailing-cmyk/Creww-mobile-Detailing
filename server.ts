@@ -31,7 +31,7 @@ Official CREWW Knowledge Base:
 - Business Name: CREWW MOBILE AUTO DETAILING
 - Service Territory: Mobile Auto Detailing across the United States (USA).
 - Official Social Media: Only Instagram (@creww.mobile.autodetailing).
-- Core Value: 100% on-site mobile detailing. We come directly to your driveway, office parking, or garage with professional equipment.
+- Core Value: 100% on-site mobile detailing. We come directly to your driveway, office parking, or garage with commercial detailing equipment.
 
 EXACTLY THREE SERVICE PACKAGES:
 1. EXTERIOR DETAILING:
@@ -49,20 +49,22 @@ EXACTLY THREE SERVICE PACKAGES:
    - Special Offer: $229 (Save $70)
    - Inclusions: ALL 7 Exterior inclusions AND ALL 7 Interior inclusions (14 total master treatments).
 
-SERVICE LOCATION & UTILITIES:
-- Water access (spigot/hose) and electricity access (120V outlet) can be indicated by the customer during booking.
-- Selecting "No, water is not available" or "No, electricity is not available" NEVER blocks or rejects a booking! Our dispatch team reviews every customer's setup and coordinates necessary arrangements.
-- Customers can verify their 5-digit US ZIP code route using the area checker on the website.
+WATER, ELECTRICITY & LOCATION REQUIREMENTS:
+- On-site water access (spigot/hose) and electricity access (120V outlet) are REQUIRED for our standard mobile detailing service.
+- Do NOT claim that CREWW automatically brings water tanks or generators.
+- During booking, customers must answer Yes or No for both Water Availability and Electricity Availability.
+- Selecting "No" for water or electricity NEVER blocks or rejects a booking submission. Instead, if either or both answers are "No", the booking is flagged as "Availability Verification Required" so our team can manually review the location and confirm whether service can be arranged before confirming any appointment.
+- The website's ZIP code checker validates US ZIP code format (5-digit or ZIP+4) only—it does NOT verify geographic coverage or service routes. Never claim a ZIP code has verified geographic coverage.
 
 BOOKING PROCESS:
 - Click any "BOOK YOUR SERVICE" button on the website to open the reservation modal.
-- Flexible scheduling: Customers choose their preferred date and preferred time (subject to confirmation by our team).
-- ZERO advance deposit required; payment is due only after a personal walkthrough inspection upon service completion.
+- Flexible scheduling: Customers choose their preferred date and preferred time, which are always subject to manual review and confirmation by our team. NEVER guarantee or confirm an appointment.
+- ZERO advance deposit required; payment is collected after completion and a personal walkthrough inspection.
 
-Rules:
-- Never invent other services, window tints, ceramic add-ons, or custom prices not listed above.
-- Always recommend the Full Detailing ($229) as our best value package when customers want both interior and exterior rejuvenation.
-- Stay friendly, enthusiastic, and helpful.`;
+Strict Rules:
+- Never invent customer reviews, ratings, other services, window tints, ceramic add-ons, custom prices, discounts, availability, or geographic service coverage.
+- Always recommend the Full Interior & Exterior Detailing ($229) as our best value package when customers want both interior and exterior care.
+- Stay friendly, accurate, and helpful.`;
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
@@ -85,7 +87,7 @@ app.post('/api/ai-chat', async (req: Request, res: Response): Promise<void> => {
 
     if (!apiKey || apiKey.trim() === '' || apiKey === 'MY_GEMINI_API_KEY') {
       res.json({
-        reply: "Welcome to **CREWW MOBILE AUTO DETAILING**! We bring premium mobile detailing right to your driveway across the USA.\n\nWe offer **Exterior Detailing ($169)**, **Interior Detailing ($189)**, and **Full Detailing ($229 · Best Value)** with payment due only after your post-service inspection. Click **'BOOK YOUR SERVICE'** to reserve your spot!",
+        reply: "Welcome to **CREWW MOBILE AUTO DETAILING**! We bring mobile detailing right to your location.\n\nWe offer **Exterior Detailing ($169)**, **Interior Detailing ($189)**, and **Full Interior & Exterior Detailing ($229 · Best Value)**. Water and electricity are required at your location (or select **No** when booking for manual team verification). Click **'BOOK YOUR SERVICE'** to submit a request!",
         notice: 'Note: To enable generative AI model features, configure GEMINI_API_KEY in your environment variables.',
       });
       return;
@@ -112,22 +114,21 @@ app.post('/api/ai-chat', async (req: Request, res: Response): Promise<void> => {
       parts: [{ text: message.trim() }],
     });
 
-    // Model selection with intelligent cascade prioritizing high-quota models
-    const candidateModels = [
-      'gemini-3.5-flash',
-      'gemini-3.5-flash-lite',
-      'gemini-3.8-flash',
-      'gemini-3.1-flash-lite',
+    // Low-latency primary model + capable fallback
+    const attempts: Array<{ model: string; timeoutMs: number; thinkingLevel?: ThinkingLevel }> = [
+      { model: 'gemini-3.1-flash-lite', timeoutMs: 8000, thinkingLevel: ThinkingLevel.MINIMAL },
+      { model: 'gemini-4-hydrogen', timeoutMs: 10000, thinkingLevel: ThinkingLevel.LOW },
     ];
-    let replyText: string | undefined;
-    let lastError: any = null;
 
-    for (const model of candidateModels) {
+    let replyText: string | undefined;
+    let lastError: unknown = null;
+
+    for (const attempt of attempts) {
       try {
-        const config = model === 'gemini-3.8-flash'
+        const config = attempt.thinkingLevel
           ? {
               systemInstruction: CREWW_SYSTEM_INSTRUCTION,
-              thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+              thinkingConfig: { thinkingLevel: attempt.thinkingLevel },
             }
           : {
               systemInstruction: CREWW_SYSTEM_INSTRUCTION,
@@ -135,32 +136,33 @@ app.post('/api/ai-chat', async (req: Request, res: Response): Promise<void> => {
 
         const response = await withTimeout(
           ai.models.generateContent({
-            model,
+            model: attempt.model,
             contents,
             config,
           }),
-          15000
+          attempt.timeoutMs
         );
 
         if (response.text) {
           replyText = response.text;
           break;
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         lastError = err;
-        console.warn(`[AI Chat] Model ${model} unavailable (${err?.status || 'network'}), attempting next model...`);
+        const status = (err as { status?: number })?.status || 'timeout/network';
+        console.warn(`[AI Chat] Model ${attempt.model} unavailable (${status}), falling back...`);
       }
     }
 
     if (replyText) {
       res.json({ reply: replyText });
     } else {
-      console.warn('[AI Chat] All candidate models timed out or failed. Last error:', lastError);
+      console.warn('[AI Chat] AI models timed out or failed:', lastError);
       res.status(503).json({
-        error: 'AI assistant is currently experiencing high demand. Please try again in a moment or click BOOK YOUR SERVICE.',
+        error: 'The AI concierge is temporarily busy. Please try again in a moment or click BOOK YOUR SERVICE to submit your request.',
       });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in /api/ai-chat:', error);
     res.status(500).json({
       error: 'An unexpected error occurred while communicating with the AI service.',

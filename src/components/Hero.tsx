@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight, Shield, Award, CheckCircle2 } from 'lucide-react';
 import { BUSINESS_CONFIG } from '../config/businessConfig';
+import { OptimizedImage } from './OptimizedImage';
 
 interface HeroProps {
   onBookService: () => void;
@@ -31,7 +32,7 @@ export const Hero: React.FC<HeroProps> = ({ onBookService, onViewServices }) => 
             </div>
 
             {/* Main Headline - Natural fluid wrapping on mobile */}
-            <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl xl:text-7xl font-black text-white uppercase tracking-tight leading-[1.1]">
+            <h1 className="font-heading text-[28px] sm:text-5xl md:text-6xl xl:text-7xl font-black text-white uppercase tracking-tight leading-[1.1] break-words">
               PRECISION AUTOMOTIVE RESTORATION.{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-blue-500 block sm:inline">
                 WHEREVER YOU ARE PARKED.
@@ -40,12 +41,12 @@ export const Hero: React.FC<HeroProps> = ({ onBookService, onViewServices }) => 
 
             {/* Original Supporting Copy */}
             <p className="text-xs sm:text-base md:text-lg text-neutral-300 max-w-2xl leading-relaxed font-normal">
-              CREWW deploys fully equipped mobile detailing units with commercial pressure washing, foam sanitation, and machine buffing directly to your home driveway or workplace parking. Flawless showroom results without leaving your property.
+              CREWW deploys mobile detailing units with commercial pressure washing, foam sanitation, and machine buffing directly to your home driveway or workplace parking. Flawless showroom results without leaving your property.
             </p>
 
             {/* Mobile Car Visual Snapshot - Visible only on mobile for immediate visual impact */}
             <div className="lg:hidden relative rounded-2xl overflow-hidden border border-neutral-800 bg-[#0d0f17] shadow-xl my-3">
-              <img
+              <OptimizedImage
                 src={BUSINESS_CONFIG.assets.heroCar}
                 alt="Immaculate black luxury performance sedan detailed by CREWW Mobile Auto Detailing"
                 className="w-full h-48 sm:h-64 object-cover"
@@ -92,7 +93,7 @@ export const Hero: React.FC<HeroProps> = ({ onBookService, onViewServices }) => 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5 pt-2 text-xs sm:text-sm text-neutral-200">
               <div className="flex items-center gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-sky-400 shrink-0" />
-                <span>Water & electricity access required at location</span>
+                <span>On-site water &amp; electricity required (manual check if unavailable)</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-sky-400 shrink-0" />
@@ -127,7 +128,7 @@ export const Hero: React.FC<HeroProps> = ({ onBookService, onViewServices }) => 
           {/* Right Column: Creative Automotive Visual Frame (Desktop only to prevent redundant stack on mobile) */}
           <div className="hidden lg:block lg:col-span-5 relative">
             <div className="relative rounded-3xl overflow-hidden border border-neutral-800/90 bg-[#0d0f17] shadow-2xl group">
-              <img
+              <OptimizedImage
                 src={BUSINESS_CONFIG.assets.heroCar}
                 alt="Immaculate black luxury performance sedan detailed by CREWW Mobile Auto Detailing"
                 className="w-full h-[380px] sm:h-[460px] lg:h-[520px] object-cover transition-transform duration-700 group-hover:scale-105"

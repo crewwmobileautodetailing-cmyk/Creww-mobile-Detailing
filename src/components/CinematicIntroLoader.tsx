@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, VolumeX, ArrowRight, Sparkles } from 'lucide-react';
 import { BUSINESS_CONFIG } from '../config/businessConfig';
 import { introAudio } from '../utils/audioSynthesizer';
+import { OptimizedImage } from './OptimizedImage';
 
 interface CinematicIntroLoaderProps {
   onComplete: () => void;
@@ -356,7 +357,7 @@ export const CinematicIntroLoader: React.FC<CinematicIntroLoaderProps> = ({
                 <Sparkles className="w-3.5 h-3.5 text-sky-400 animate-spin" />
                 <span>
                   {stage === 0 && 'Mobilizing CREWW Detailing Fleet...'}
-                  {stage === 1 && 'Deionized Pressure Hydro-Rinse...'}
+                  {stage === 1 && 'High-Pressure Hydro-Rinse...'}
                   {stage === 2 && 'Active Snow Foam Paint Decontamination...'}
                   {stage === 3 && 'Ceramic Buffer Wax & Liquid Gloss Seal...'}
                 </span>
@@ -367,7 +368,7 @@ export const CinematicIntroLoader: React.FC<CinematicIntroLoaderProps> = ({
             </div>
           ) : (
             <div className="space-y-2 animate-fade-in flex flex-col items-center">
-              <img
+              <OptimizedImage
                 src={BUSINESS_CONFIG.officialBadgePath}
                 alt="CREWW Official Badge"
                 className="h-14 sm:h-16 w-auto object-contain drop-shadow-[0_4px_16px_rgba(14,165,233,0.35)]"

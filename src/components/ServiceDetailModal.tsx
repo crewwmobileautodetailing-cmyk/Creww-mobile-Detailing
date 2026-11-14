@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
-import { X, Check, ArrowRight, ShieldCheck, Sparkles, Tag } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import { X, Check, ArrowRight, ShieldCheck } from 'lucide-react';
 import { DetailPackage } from '../config/businessConfig';
+import { OptimizedImage } from './OptimizedImage';
 
 interface ServiceDetailModalProps {
   packageData: DetailPackage | null;
@@ -13,9 +14,12 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
   onClose,
   onBookPackage,
 }) => {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     if (packageData) {
       document.body.style.overflow = 'hidden';
+      closeButtonRef.current?.focus();
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape') onClose();
       };
@@ -39,12 +43,13 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
       }}
       role="dialog"
       aria-modal="true"
+      aria-labelledby="service-detail-title"
     >
-      <div className="relative w-full max-w-2xl max-h-[90vh] bg-[#0c0e15] border border-neutral-700/80 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-modal-content">
+      <div className="relative w-full max-w-2xl max-h-[90dvh] bg-[#0c0e15] border border-neutral-700/80 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-modal-content">
         
         {/* Header Image Strip */}
         <div className="relative h-48 sm:h-56 overflow-hidden bg-neutral-900 shrink-0">
-          <img
+          <OptimizedImage
             src={packageData.image}
             alt={packageData.name}
             className="w-full h-full object-cover"
@@ -52,20 +57,24 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
           <div className="absolute inset-0 bg-gradient-to-t from-[#0c0e15] via-black/40 to-transparent" />
           
           <button
+            ref={closeButtonRef}
             onClick={onClose}
             type="button"
-            className="absolute top-4 right-4 p-2 rounded-full bg-black/70 hover:bg-black text-neutral-300 hover:text-white transition-colors cursor-pointer"
-            aria-label="Close modal"
+            className="absolute top-3 right-3 p-2 rounded-full bg-black/70 hover:bg-black text-neutral-300 hover:text-white transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Close service details modal"
           >
             <X className="w-5 h-5" />
           </button>
 
-          <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-sky-400 bg-black/60 px-2.5 py-1 rounded backdrop-blur-sm border border-sky-400/30 inline-block mb-1">
+          <div className="absolute bottom-4 left-4 right-4 sm:left-5 sm:right-5 flex items-end justify-between gap-2">
+            <div className="min-w-0">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-sky-400 bg-black/60 px-2.5 py-1 rounded backdrop-blur-sm border border-sky-400/30 inline-block mb-1">
                 {packageData.badge}
               </span>
-              <h3 className="font-heading text-2xl sm:text-3xl font-black text-white uppercase tracking-wide">
+              <h3
+                id="service-detail-title"
+                className="font-heading text-xl sm:text-3xl font-black text-white uppercase tracking-wide"
+              >
                 {packageData.name}
               </h3>
               {packageData.subtitle && (
@@ -117,20 +126,22 @@ export const ServiceDetailModal: React.FC<ServiceDetailModalProps> = ({
 
           <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20 text-xs text-sky-300 flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 shrink-0" />
-            <span>100% Mobile Service: We arrive with spot-free water & self-contained power.</span>
+            <span>100% Mobile Service: On-site water spigot &amp; 120V electricity required (or request manual verification when booking).</span>
           </div>
         </div>
 
         {/* Modal Footer with Direct Booking Action */}
-        <div className="p-4 sm:p-5 border-t border-neutral-800 bg-[#090b10] flex items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 border-t border-neutral-800 bg-[#090b10] flex items-center justify-between gap-3 shrink-0">
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors cursor-pointer"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors cursor-pointer min-h-[44px]"
           >
             Close
           </button>
 
           <button
+            type="button"
             onClick={() => {
               onClose();
               onBookPackage(packageData.id);

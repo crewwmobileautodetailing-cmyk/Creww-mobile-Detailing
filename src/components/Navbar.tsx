@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrandLogo } from './BrandLogo';
+import { OptimizedImage } from './OptimizedImage';
 import { Menu, X, Calendar, ChevronRight, RotateCcw } from 'lucide-react';
 import { BUSINESS_CONFIG } from '../config/businessConfig';
 
@@ -58,13 +59,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onBookService, onReplayIntro }) 
     <header className="sticky top-0 z-50 w-full">
       {/* Main Navigation Bar - Strictly at top-0, sticky across all devices */}
       <nav
+        aria-label="Primary navigation"
         className={`w-full transition-all duration-300 ${
           isScrolled
             ? 'bg-[#06070a]/95 backdrop-blur-md shadow-xl shadow-black/40 border-b border-neutral-800'
             : 'bg-[#06070a] border-b border-neutral-800/80 shadow-sm'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2 sm:gap-6 lg:gap-8">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-1.5 sm:gap-6 lg:gap-8">
           {/* Zone 1: Brand Wordmark & Official Badge */}
           <a
             href="#home"
@@ -90,13 +92,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onBookService, onReplayIntro }) 
           </div>
 
           {/* Zone 3: Primary Action & Controls */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Replay Intro Pill Button - Independent and directly accessible beside hamburger */}
             {onReplayIntro && (
               <button
                 type="button"
                 onClick={onReplayIntro}
-                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-bold tracking-wide uppercase text-sky-400 bg-sky-950/40 hover:bg-sky-900/60 active:scale-95 border border-sky-500/40 hover:border-sky-400 transition-all shadow-sm shadow-sky-950/40 cursor-pointer min-h-[38px]"
+                className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-bold tracking-wide uppercase text-sky-400 bg-sky-950/40 hover:bg-sky-900/60 active:scale-95 border border-sky-500/40 hover:border-sky-400 transition-all shadow-sm shadow-sky-950/40 cursor-pointer min-h-[38px]"
                 title="Replay cinematic car detailing intro animation"
                 aria-label="Replay Intro"
               >
@@ -143,7 +145,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onBookService, onReplayIntro }) 
                 {/* Drawer Header */}
                 <div className="flex items-center justify-between pb-4 border-b border-neutral-800/80">
                   <div className="flex items-center gap-2.5">
-                    <img
+                    <OptimizedImage
                       src={BUSINESS_CONFIG.officialBadgePath}
                       alt="CREWW Badge"
                       className="h-8 w-auto object-contain"
@@ -159,6 +161,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onBookService, onReplayIntro }) 
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => setMobileMenuOpen(false)}
                     className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800/80 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
                     aria-label="Close navigation menu"
@@ -168,7 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onBookService, onReplayIntro }) 
                 </div>
 
                 {/* Mobile Navigation Links */}
-                <nav className="py-4 space-y-1">
+                <nav aria-label="Mobile navigation" className="py-4 space-y-1">
                   {navLinks.map((link) => (
                     <a
                       key={link.label}
@@ -198,7 +201,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onBookService, onReplayIntro }) 
                 </button>
 
                 <p className="text-[11px] text-neutral-500 text-center">
-                  Self-contained units dispatched to your location
+                  Mobile detailing units dispatched to your location
                 </p>
               </div>
             </div>

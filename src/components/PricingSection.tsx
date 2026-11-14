@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Check, ArrowRight, Shield, Star, ChevronDown, ChevronUp, Droplets, Zap } from 'lucide-react';
+import { Check, ArrowRight, Shield, Star, ChevronDown, ChevronUp } from 'lucide-react';
 import { BUSINESS_CONFIG, DetailPackage } from '../config/businessConfig';
 import { ServiceRequirementsNotice } from './ServiceRequirementsNotice';
+import { OptimizedImage } from './OptimizedImage';
 
 interface PricingSectionProps {
   onSelectPackage: (packageId: string) => void;
@@ -64,7 +65,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPackage,
               >
                 <div>
                   {/* Top Badge Strip */}
-                  <div className="flex items-center justify-between gap-2 mb-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                     <span
                       className={`text-xs font-black tracking-wider uppercase px-3 py-1 rounded-md flex items-center gap-1.5 ${
                         isBestValue
@@ -83,7 +84,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPackage,
 
                   {/* Image Preview */}
                   <div className="relative h-36 sm:h-44 rounded-2xl overflow-hidden mb-4 bg-neutral-900 border border-neutral-800/80">
-                    <img
+                    <OptimizedImage
                       src={pkg.image}
                       alt={pkg.name}
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
@@ -193,7 +194,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onSelectPackage,
                   )}
 
                   <p className="text-center text-[10px] text-neutral-400 mt-2">
-                    Transparent pricing · Water & electricity hookup confirmed by client
+                    Transparent pricing · Water &amp; electricity required (or manual verification)
                   </p>
                 </div>
 

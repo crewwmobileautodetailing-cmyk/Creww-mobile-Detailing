@@ -23,7 +23,7 @@ export const FinalCtaSection: React.FC<FinalCtaSectionProps> = ({ onBookService,
           </h2>
 
           <p className="text-sm sm:text-lg text-neutral-300 max-w-2xl mx-auto mt-3 sm:mt-4 leading-relaxed font-normal">
-            Select your preferred detailing package and lock in our active promotional rates. Our self-contained units bring purified spot-free water, independent electricity, and certified detailing specialists directly to you.
+            Select your preferred detailing package and lock in our active promotional rates. Certified detailing specialists come directly to your location (on-site water &amp; electricity access required, or submit for manual team verification).
           </p>
 
           {/* Quick value markers */}

@@ -50,7 +50,7 @@ export const BUSINESS_CONFIG = {
   officialLogoPath: "/assets/aistudio/Sleek_Blue_Crew_Auto_Detailing_Badge_f6a27b68.png",
   tagline: "Precision On-Site Automotive Detailing",
   email: "crewwmobileautodetailing@gmail.com",
-  serviceTerritory: "United States (Self-Contained Mobile Units)",
+  serviceTerritory: "United States (On-Site Mobile Detailing)",
 
   // STRICT: Only Instagram profile
   instagram: {
@@ -168,12 +168,12 @@ export const BUSINESS_CONFIG = {
    */
   pillars: [
     {
-      title: "Deionized Water Tanks",
-      description: "We haul our own spot-free filtered water tanks. No mineral deposits, etching, or hard-water residue on your clear coat.",
+      title: "Spot-Free Wash & Rinse",
+      description: "Commercial pressure rinsing, pH-balanced foam hand wash, and plush microfiber drying performed cleanly using your on-site water connection.",
     },
     {
-      title: "Zero Property Hookups",
-      description: "Our mobile rigs operate with independent silent power generators and high-pressure hose systems. No utility draw from your home.",
+      title: "On-Site Utility Setup",
+      description: "Water and electricity are required for our service. If unavailable at your location, indicate 'No' when booking and our team will manually verify arrangements.",
     },
     {
       title: "Buffer Wax Paint Defense",

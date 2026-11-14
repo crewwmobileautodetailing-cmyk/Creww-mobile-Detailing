@@ -1,6 +1,7 @@
 import React from 'react';
 import { Shield, Droplets, CheckCircle, Car } from 'lucide-react';
 import { BUSINESS_CONFIG } from '../config/businessConfig';
+import { OptimizedImage } from './OptimizedImage';
 
 interface AboutSectionProps {
   onBookService: () => void;
@@ -16,22 +17,22 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onBookService }) => 
           {/* Left Column: Visual Asset Frame with Studio Photography */}
           <div className="lg:col-span-5 relative space-y-6">
             <div className="rounded-3xl overflow-hidden border border-neutral-800 bg-[#0d0f17] shadow-2xl relative group">
-              <img
+              <OptimizedImage
                 src={BUSINESS_CONFIG.assets.fullDetailService}
                 alt="Pristine performance vehicle detailed by CREWW"
-                className="w-full h-[400px] sm:h-[460px] object-cover group-hover:scale-105 transition-transform duration-700"
+                className="w-full h-[320px] sm:h-[460px] object-cover group-hover:scale-105 transition-transform duration-700"
                 referrerPolicy="no-referrer"
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#06070a] via-black/30 to-transparent" />
               
-              <div className="absolute bottom-5 left-5 right-5 p-4 rounded-2xl bg-[#090b10]/90 backdrop-blur-md border border-neutral-700/80 shadow-md">
+              <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5 p-4 rounded-2xl bg-[#090b10]/90 backdrop-blur-md border border-neutral-700/80 shadow-md">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-sky-400 mb-1">
                   <Shield className="w-4 h-4" />
                   <span>The CREWW Mobile Fleet</span>
                 </div>
                 <p className="text-xs text-neutral-300 leading-relaxed">
-                  Independent mobile rigs carrying commercial-grade steam extractors, random-orbital buffers, and closed-circuit power.
+                  Mobile detailing units equipped with commercial-grade steam extractors, random-orbital buffers, and pressure washers (on-site water &amp; power required).
                 </p>
               </div>
             </div>
@@ -55,7 +56,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onBookService }) => 
             </p>
 
             <p className="text-sm sm:text-base text-neutral-300 leading-relaxed font-normal">
-              We engineered a turnkey on-site solution. Our technicians arrive in self-sufficient mobile units carrying multi-stage filtered deionized water, whisper-quiet generators, and specialized automotive restoration equipment. Whether stationed in your home driveway, executive garage, or corporate campus, we treat your vehicle with the exact same meticulous precision found in dedicated detailing bays.
+              We engineered a streamlined on-site detailing service. Our technicians arrive directly at your home driveway, garage, or workplace with commercial pressure washers, steam extractors, and specialized automotive restoration equipment—connecting cleanly to your on-site water spigot and standard 120V outlet (or requesting manual location verification if either is unavailable).
             </p>
 
             {/* Core Operational Principles */}

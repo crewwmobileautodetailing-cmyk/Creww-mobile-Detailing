@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, X, Sparkles, Calendar, Droplets, Zap, CheckCircle2, ChevronRight, MessageSquare } from 'lucide-react';
-import { BUSINESS_CONFIG } from '../config/businessConfig';
+import { Send, X, Sparkles, Calendar, Droplets, Zap, ChevronRight, RotateCcw } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -8,22 +7,29 @@ interface Message {
   text: string;
   timestamp: string;
   showBookButton?: boolean;
+  retryQuery?: string;
 }
 
 interface CuteAiCarAssistantProps {
   onBookService: (serviceId?: string) => void;
+  isModalOpen?: boolean;
 }
 
 const QUICK_PROMPTS = [
   'What services do you offer?',
   'What are your prices?',
   "What's included in each package?",
-  'Do you service my ZIP code?',
-  'What do I need before booking?',
+  'How do water & power work?',
+  'What happens if I have no water or power?',
   'How can I book?',
 ];
 
-export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookService }) => {
+const CHAT_TIMEOUT_MS = 20000;
+
+export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({
+  onBookService,
+  isModalOpen = false,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -35,21 +41,21 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
     {
       id: 'welcome-1',
       sender: 'assistant',
-      text: 'Hey! Welcome to CREWW 🚗 How can I help you today?',
+      text: 'Hey! Welcome to CREWW. Ask me about detailing packages, pricing, water and power requirements, or booking!',
       timestamp: 'Just now',
       showBookButton: true,
     },
   ]);
 
-  // Show a cute initial greeting tooltip after 4 seconds if not opened
+  // Show initial greeting tooltip after 4 seconds if not opened and no modal is active
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!isOpen && !hasInteracted) {
+      if (!isOpen && !hasInteracted && !isModalOpen) {
         setShowTooltip(true);
       }
     }, 4000);
     return () => clearTimeout(timer);
-  }, [isOpen, hasInteracted]);
+  }, [isOpen, hasInteracted, isModalOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -57,6 +63,16 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
       setHasInteracted(true);
     }
   }, [isOpen]);
+
+  // Automatically close the chat window if a booking/detail/legal/contact modal opens so they never overlap
+  useEffect(() => {
+    if (isModalOpen && isOpen) {
+      setIsOpen(false);
+    }
+    if (isModalOpen && showTooltip) {
+      setShowTooltip(false);
+    }
+  }, [isModalOpen, isOpen, showTooltip]);
 
   // Handle Escape key to close chat window
   useEffect(() => {
@@ -71,7 +87,7 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
 
   // Viewport height tracking for mobile keyboard awareness
   const [viewportHeight, setViewportHeight] = useState<number>(() =>
-    typeof window !== 'undefined' ? (window.visualViewport?.height || window.innerHeight) : 800
+    typeof window !== 'undefined' ? window.visualViewport?.height || window.innerHeight : 800
   );
 
   useEffect(() => {
@@ -89,7 +105,7 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
     };
   }, []);
 
-  // Isolated IntersectionObserver implementation observing the footer element
+  // Isolated IntersectionObserver observing the footer element
   const [footerLiftOffset, setFooterLiftOffset] = useState<number>(0);
 
   useEffect(() => {
@@ -107,7 +123,6 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
       const vh = window.innerHeight;
       const visibleFooterHeight = vh - rect.top;
       if (visibleFooterHeight > 0) {
-        // Elevate above footer with 20px clearance, leaving room below sticky navbar
         const maxLift = Math.max(0, vh - 110);
         setFooterLiftOffset(Math.min(visibleFooterHeight + 20, maxLift));
       } else {
@@ -156,13 +171,33 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
     }
   }, [messages, isTyping, isOpen]);
 
+  const fetchChatWithTimeout = async (
+    url: string,
+    payload: { message: string; history: { role: string; text: string }[] }
+  ) => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS);
+    try {
+      return await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  };
+
   const handleSend = async (questionText?: string) => {
     const query = (questionText || input).trim();
     if (!query || isTyping) return;
 
-    // Check if customer explicitly typed a direct command to open booking
+    // Direct command to open booking modal
     if (/^(book|book now|schedule|schedule now|open booking|make a reservation)$/i.test(query)) {
+      setIsOpen(false);
       onBookService();
+      return;
     }
 
     const userMsg: Message = {
@@ -172,9 +207,10 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    // Prepare multi-turn history for the AI backend
+    // Prepare multi-turn history for the AI backend (exclude synthetic retry/error placeholders)
     const currentHistory = messages
-      .filter((m) => m.id !== 'welcome-1')
+      .filter((m) => m.id !== 'welcome-1' && !m.retryQuery)
+      .slice(-12)
       .map((m) => ({
         role: m.sender === 'user' ? 'user' : 'model',
         text: m.text,
@@ -185,56 +221,46 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
     setIsTyping(true);
 
     try {
-      // Primary route is /api/ai-chat (proxied via Express in dev and netlify.toml in production)
+      const payload = { message: query, history: currentHistory };
       let response: Response;
       try {
-        response = await fetch('/api/ai-chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: query,
-            history: currentHistory,
-          }),
-        });
-
-        // If /api/ai-chat returned 404 on Netlify, attempt direct /.netlify/functions/ai-chat
+        response = await fetchChatWithTimeout('/api/ai-chat', payload);
         if (response.status === 404) {
-          response = await fetch('/.netlify/functions/ai-chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              message: query,
-              history: currentHistory,
-            }),
-          });
+          response = await fetchChatWithTimeout('/.netlify/functions/ai-chat', payload);
         }
-      } catch (directErr) {
-        // Fallback to Netlify function direct path if relative path errored
-        response = await fetch('/.netlify/functions/ai-chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: query,
-            history: currentHistory,
-          }),
-        });
+      } catch (err) {
+        if ((err as Error)?.name === 'AbortError') {
+          throw err;
+        }
+        response = await fetchChatWithTimeout('/.netlify/functions/ai-chat', payload);
       }
 
       const data = await response.json().catch(() => ({}));
+      const replyText: string | undefined = data.reply;
 
-      let replyText: string = data.reply;
+      if (!response.ok || !replyText) {
+        const errorText =
+          typeof data.error === 'string' && data.error.trim()
+            ? data.error
+            : "I'm having trouble connecting right now. Please try again in a moment or tap **'Book Your Service'** below.";
 
-      if (!replyText) {
-        if (data.error) {
-          replyText = data.error;
-        } else {
-          replyText = "I'm having a brief connection hiccup with the AI service. Please try asking again in a moment or tap **'BOOK YOUR SERVICE'** below to reserve your detailing slot!";
-        }
+        const botErrMsg: Message = {
+          id: `a-${Date.now()}`,
+          sender: 'assistant',
+          text: errorText,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          showBookButton: true,
+          retryQuery: query,
+        };
+        setMessages((prev) => [...prev, botErrMsg]);
+        return;
       }
 
       const isBookingRelevant =
-        /book|schedule|reserve|appointment|offer|price|cost|deal|rate|package/i.test(query) ||
-        /book|schedule|reserve|appointment|walkthrough/i.test(replyText);
+        /book|schedule|reserve|appointment|offer|price|cost|deal|rate|package|water|power|electricity/i.test(
+          query
+        ) ||
+        /book|schedule|reserve|appointment|walkthrough|availability verification/i.test(replyText);
 
       const botMsg: Message = {
         id: `a-${Date.now()}`,
@@ -245,14 +271,18 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
       };
 
       setMessages((prev) => [...prev, botMsg]);
-    } catch (networkErr: any) {
-      console.warn('[AI Assistant] Network communication error:', networkErr);
+    } catch (networkErr: unknown) {
+      const isTimeout = (networkErr as Error)?.name === 'AbortError';
+      console.warn('[AI Assistant] Request failed:', networkErr);
       const botMsg: Message = {
         id: `a-${Date.now()}`,
         sender: 'assistant',
-        text: "Unable to reach the AI assistant server at this moment. Please check your network connection or tap **'BOOK YOUR SERVICE'** below to book directly!",
+        text: isTimeout
+          ? "The assistant took too long to respond. Please tap **'Retry'** or use **'Book Your Service'** below."
+          : "Unable to reach the AI assistant right now. Please check your connection, tap **'Retry'**, or use **'Book Your Service'** below.",
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         showBookButton: true,
+        retryQuery: query,
       };
       setMessages((prev) => [...prev, botMsg]);
     } finally {
@@ -260,35 +290,42 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
     }
   };
 
+  if (isModalOpen) {
+    return null;
+  }
+
   return (
     <div
-      className="fixed right-4 sm:right-6 z-40 select-none transition-[bottom] duration-200 ease-out"
+      className="fixed right-3 sm:right-6 z-40 select-none transition-[bottom] duration-200 ease-out"
       style={{
-        bottom: footerLiftOffset > 0 ? `${footerLiftOffset}px` : 'max(1rem, env(safe-area-inset-bottom, 1rem))',
+        bottom:
+          footerLiftOffset > 0
+            ? `${footerLiftOffset}px`
+            : 'max(1rem, env(safe-area-inset-bottom, 1rem))',
       }}
     >
-      
       {/* Greeting Tooltip for Cute Car */}
       {!isOpen && showTooltip && (
-        <div className="absolute bottom-20 right-0 w-60 sm:w-64 p-3 rounded-2xl bg-[#090c14] border border-sky-400/40 shadow-xl shadow-sky-500/10 text-white animate-bounce-subtle z-50">
+        <div className="absolute bottom-20 right-0 w-56 sm:w-64 p-3 rounded-2xl bg-[#090c14] border border-sky-400/40 shadow-xl shadow-sky-500/10 text-white animate-bounce-subtle z-40">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-1.5 text-sky-400 text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Crewy is ready!</span>
             </div>
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowTooltip(false);
               }}
-              className="p-1 text-neutral-400 hover:text-white"
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800"
               aria-label="Close tooltip"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
           <p className="text-xs text-neutral-300 mt-1 leading-snug">
-            Need pricing, inclusions, or water & power info? Tap me anytime!
+            Need pricing, inclusions, or water &amp; power info? Tap me anytime!
           </p>
           <div className="absolute -bottom-2 right-8 w-4 h-4 bg-[#090c14] border-r border-b border-sky-400/40 transform rotate-45" />
         </div>
@@ -297,6 +334,7 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
       {/* Cute Car Floating Trigger Button */}
       {!isOpen && (
         <button
+          type="button"
           onClick={() => setIsOpen(true)}
           className="group relative flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
           aria-label="Open CREWW AI Car Assistant"
@@ -306,18 +344,14 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
 
           {/* Miniature Cute Car Body Container */}
           <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-b from-[#141926] via-[#0d101a] to-[#07090f] border-2 border-sky-400/60 rounded-3xl shadow-2xl flex flex-col items-center justify-center p-1.5 overflow-hidden">
-            
-            {/* Cute Car Vector Graphic */}
             <svg
               viewBox="0 0 100 80"
-              className="w-13 h-10 drop-shadow-[0_4px_8px_rgba(56,189,248,0.4)]"
+              className="w-12 h-9 sm:w-13 sm:h-10 drop-shadow-[0_4px_8px_rgba(56,189,248,0.4)]"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
             >
-              {/* Ground Shadow */}
               <ellipse cx="50" cy="72" rx="38" ry="4" fill="rgba(0,0,0,0.6)" />
-
-              {/* Sleek Car Chassis */}
               <path
                 d="M12 50 C12 40, 20 38, 28 36 L40 22 C44 17, 56 17, 68 22 L80 36 C88 38, 92 44, 92 50 L92 56 C92 59, 89 61, 85 61 L15 61 C13 61, 12 59, 12 56 Z"
                 fill="url(#carMetallicGradient)"
@@ -325,61 +359,36 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
                 strokeWidth="2.5"
                 strokeLinejoin="round"
               />
-
-              {/* Glossy Windshield & Windows */}
               <path
                 d="M33 36 L43 25 C45 23, 55 23, 63 25 L73 36 Z"
                 fill="url(#glassGradient)"
                 stroke="#0284c7"
                 strokeWidth="1.5"
               />
-
-              {/* Windshield Shine Highlight */}
-              <path
-                d="M45 26 L55 26 L49 35 L43 35 Z"
-                fill="white"
-                fillOpacity="0.4"
-              />
-
-              {/* Glowing Headlights (Animated Eyes/Beams) */}
+              <path d="M45 26 L55 26 L49 35 L43 35 Z" fill="white" fillOpacity="0.4" />
               <circle cx="21" cy="47" r="4.5" fill="#38bdf8" className="animate-pulse" />
               <circle cx="21" cy="47" r="2" fill="#ffffff" />
-              
               <circle cx="79" cy="47" r="4.5" fill="#38bdf8" className="animate-pulse" />
               <circle cx="79" cy="47" r="2" fill="#ffffff" />
-
-              {/* Front Smiling Grille */}
-              <path
-                d="M40 52 Q50 56 60 52"
-                stroke="#38bdf8"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-
-              {/* Wheels */}
+              <path d="M40 52 Q50 56 60 52" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" />
               <g className="animate-[spin_4s_linear_infinite]" style={{ transformOrigin: '28px 61px' }}>
                 <circle cx="28" cy="61" r="8" fill="#18181b" stroke="#0ea5e9" strokeWidth="2.5" />
                 <circle cx="28" cy="61" r="3.5" fill="#e0f2fe" />
                 <line x1="28" y1="53" x2="28" y2="69" stroke="#38bdf8" strokeWidth="1.5" />
                 <line x1="20" y1="61" x2="36" y2="61" stroke="#38bdf8" strokeWidth="1.5" />
               </g>
-
               <g className="animate-[spin_4s_linear_infinite]" style={{ transformOrigin: '72px 61px' }}>
                 <circle cx="72" cy="61" r="8" fill="#18181b" stroke="#0ea5e9" strokeWidth="2.5" />
                 <circle cx="72" cy="61" r="3.5" fill="#e0f2fe" />
                 <line x1="72" y1="53" x2="72" y2="69" stroke="#38bdf8" strokeWidth="1.5" />
                 <line x1="64" y1="61" x2="80" y2="61" stroke="#38bdf8" strokeWidth="1.5" />
               </g>
-
-              {/* Sparkle over spoiler */}
               <path
                 d="M78 16 L80 12 L82 16 L86 18 L82 20 L80 24 L78 20 L74 18 Z"
                 fill="#38bdf8"
                 className="animate-ping"
                 style={{ transformOrigin: '80px 18px', animationDuration: '2.5s' }}
               />
-
-              {/* Gradients */}
               <defs>
                 <linearGradient id="carMetallicGradient" x1="12" y1="20" x2="92" y2="61" gradientUnits="userSpaceOnUse">
                   <stop stopColor="#1e293b" />
@@ -393,12 +402,10 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
               </defs>
             </svg>
 
-            {/* Micro Badge */}
             <span className="text-[9px] font-mono font-black text-sky-400 uppercase tracking-widest mt-0.5">
               CREWY AI
             </span>
 
-            {/* Online Green Indicator Dot */}
             <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-black" />
@@ -407,22 +414,24 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
         </button>
       )}
 
-      {/* Chat Popup Panel - Mobile & desktop responsive viewport docking with keyboard and footer awareness */}
+      {/* Chat Popup Panel */}
       {isOpen && (
         <div
-          className="fixed right-3 left-3 sm:left-auto sm:right-6 sm:w-[410px] bg-[#0a0d16] border border-sky-500/40 rounded-3xl shadow-2xl shadow-sky-950/70 flex flex-col overflow-hidden animate-scale-up backdrop-blur-xl z-50 transition-[bottom,max-height] duration-200 ease-out"
+          role="dialog"
+          aria-modal="false"
+          aria-label="CREWW AI Concierge Chat"
+          className="fixed right-2.5 left-2.5 sm:left-auto sm:right-6 sm:w-[410px] bg-[#0a0d16] border border-sky-500/40 rounded-3xl shadow-2xl shadow-sky-950/70 flex flex-col overflow-hidden animate-scale-up backdrop-blur-xl z-40 transition-[bottom,max-height] duration-200 ease-out"
           style={{
             bottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))',
-            maxHeight: `min(580px, ${Math.max(280, viewportHeight - 96)}px)`,
-            height: `${Math.min(580, Math.max(280, viewportHeight - 96))}px`,
+            maxHeight: `min(580px, ${Math.max(280, viewportHeight - 88)}px)`,
+            height: `${Math.min(580, Math.max(280, viewportHeight - 88))}px`,
           }}
         >
-          
           {/* Header */}
-          <div className="px-4 py-3 bg-[#0d121f] border-b border-neutral-800 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2.5">
+          <div className="px-4 py-3 bg-[#0d121f] border-b border-neutral-800 flex items-center justify-between gap-2 shrink-0">
+            <div className="flex items-center gap-2.5 min-w-0">
               <div className="relative w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-600 to-blue-500 flex items-center justify-center p-1 border border-sky-400/40 shadow-inner shrink-0">
-                <svg viewBox="0 0 100 80" className="w-7 h-6" fill="none">
+                <svg viewBox="0 0 100 80" className="w-7 h-6" fill="none" aria-hidden="true">
                   <path
                     d="M12 50 C12 40, 20 38, 28 36 L40 22 C44 17, 56 17, 68 22 L80 36 C88 38, 92 44, 92 50 Z"
                     fill="#0f172a"
@@ -434,51 +443,50 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
                 </svg>
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-black rounded-full" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <h3 className="font-heading text-sm font-black text-white uppercase tracking-wide">
                     Crewy
                   </h3>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-400 font-mono font-bold uppercase">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 font-mono font-bold uppercase whitespace-nowrap">
                     AI Concierge
                   </span>
                 </div>
-                <p className="text-[10px] text-neutral-400">
-                  CREWW Mobile Detailing Knowledge Base
+                <p className="text-[10px] text-neutral-400 truncate">
+                  CREWW Mobile Detailing Assistant
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800/80 active:scale-95 transition-all cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center"
-                aria-label="Close Assistant"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800/80 active:scale-95 transition-all cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0"
+              aria-label="Close Assistant"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Quick Info Bar for Requirements */}
-          <div className="px-3.5 py-1.5 bg-sky-950/40 border-b border-sky-800/30 flex items-center justify-between text-[11px] text-sky-300">
+          <div className="px-3.5 py-1.5 bg-sky-950/40 border-b border-sky-800/30 flex flex-wrap items-center justify-between gap-1 text-[11px] text-sky-300 shrink-0">
             <span className="flex items-center gap-1">
-              <Droplets className="w-3 h-3 text-sky-400" />
-              <Zap className="w-3 h-3 text-amber-400" />
-              Water & Power Required at Location
+              <Droplets className="w-3 h-3 text-sky-400 shrink-0" />
+              <Zap className="w-3 h-3 text-amber-400 shrink-0" />
+              <span>Water &amp; Power Required</span>
             </span>
-            <span className="font-mono text-[10px] text-neutral-400">USA Nationwide</span>
+            <span className="font-mono text-[10px] text-neutral-400">USA Mobile Service</span>
           </div>
 
           {/* Messages Scroll Area */}
-          <div className="flex-1 p-3.5 overflow-y-auto space-y-3">
+          <div className="flex-1 p-3.5 overflow-y-auto overscroll-contain space-y-3">
             {messages.map((m) => (
               <div
                 key={m.id}
                 className={`flex flex-col ${m.sender === 'user' ? 'items-end' : 'items-start'}`}
               >
                 <div
-                  className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                  className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed break-words ${
                     m.sender === 'user'
                       ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-br-xs shadow-md'
                       : 'bg-[#121624] text-neutral-200 border border-neutral-800/90 rounded-bl-xs shadow-sm'
@@ -505,19 +513,36 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
                   </div>
                 </div>
 
-                {/* Optional "Book Your Service" Action Pill inside chat */}
-                {m.sender === 'assistant' && m.showBookButton && (
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      onBookService();
-                    }}
-                    className="mt-1.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-[11px] font-bold uppercase tracking-wider transition-all shadow-md shadow-sky-500/20 cursor-pointer"
-                  >
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>Book Your Service</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+                {/* Action buttons under assistant messages */}
+                {m.sender === 'assistant' && (m.showBookButton || m.retryQuery) && (
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    {m.retryQuery && (
+                      <button
+                        type="button"
+                        disabled={isTyping}
+                        onClick={() => handleSend(m.retryQuery)}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-white text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Retry</span>
+                      </button>
+                    )}
+
+                    {m.showBookButton && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsOpen(false);
+                          onBookService();
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-[11px] font-bold uppercase tracking-wider transition-all shadow-md shadow-sky-500/20 cursor-pointer"
+                      >
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>Book Your Service</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 )}
 
                 <span className="text-[9px] text-neutral-500 mt-0.5 px-1 font-mono">
@@ -529,11 +554,22 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
             {isTyping && (
               <div className="flex items-center gap-2 text-xs text-sky-300 bg-[#121624] border border-neutral-800/80 px-3.5 py-2.5 rounded-2xl w-fit shadow-sm">
                 <div className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-sky-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-2 h-2 rounded-full bg-sky-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-2 h-2 rounded-full bg-sky-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <span
+                    className="w-2 h-2 rounded-full bg-sky-400 animate-bounce"
+                    style={{ animationDelay: '0ms' }}
+                  />
+                  <span
+                    className="w-2 h-2 rounded-full bg-sky-400 animate-bounce"
+                    style={{ animationDelay: '150ms' }}
+                  />
+                  <span
+                    className="w-2 h-2 rounded-full bg-sky-400 animate-bounce"
+                    style={{ animationDelay: '300ms' }}
+                  />
                 </div>
-                <span className="font-mono text-[11px] text-neutral-300 ml-1">Crewy is replying...</span>
+                <span className="font-mono text-[11px] text-neutral-300 ml-1">
+                  Crewy is replying...
+                </span>
               </div>
             )}
 
@@ -552,7 +588,7 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
                   type="button"
                   onClick={() => handleSend(q)}
                   disabled={isTyping}
-                  className="px-3 py-1.5 rounded-xl bg-[#141926] hover:bg-sky-950/60 active:scale-95 border border-neutral-700/60 hover:border-sky-500/50 text-[11px] text-neutral-200 hover:text-white whitespace-nowrap transition-all cursor-pointer shrink-0 disabled:opacity-50"
+                  className="px-3 py-2 min-h-[36px] rounded-xl bg-[#141926] hover:bg-sky-950/60 active:scale-95 border border-neutral-700/60 hover:border-sky-500/50 text-[11px] text-neutral-200 hover:text-white whitespace-nowrap transition-all cursor-pointer shrink-0 disabled:opacity-50"
                 >
                   {q}
                 </button>
@@ -572,23 +608,22 @@ export const CuteAiCarAssistant: React.FC<CuteAiCarAssistantProps> = ({ onBookSe
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about packages, prices, or prep..."
+              placeholder="Ask about packages, prices, or water/power..."
+              aria-label="Ask Crewy a detailing question"
               disabled={isTyping}
-              className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#070910] border border-neutral-700 text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500 disabled:opacity-50"
+              className="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl bg-[#070910] border border-neutral-700 text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500 disabled:opacity-50 min-h-[44px]"
             />
             <button
               type="submit"
               disabled={!input.trim() || isTyping}
-              className="p-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white disabled:opacity-40 transition-all cursor-pointer min-w-[42px] min-h-[42px] flex items-center justify-center active:scale-95 shrink-0 shadow-md shadow-sky-500/20"
+              className="p-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white disabled:opacity-40 transition-all cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center active:scale-95 shrink-0 shadow-md shadow-sky-500/20"
               aria-label="Send message"
             >
               <Send className="w-4 h-4" />
             </button>
           </form>
-
         </div>
       )}
-
     </div>
   );
 };

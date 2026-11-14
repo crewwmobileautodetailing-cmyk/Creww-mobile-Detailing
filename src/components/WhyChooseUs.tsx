@@ -23,7 +23,7 @@ export const WhyChooseUs: React.FC = () => {
           </h2>
 
           <p className="text-neutral-300 text-sm sm:text-base mt-3 leading-relaxed">
-            We eliminate the compromises of traditional car washes and static detailing shops by bringing laboratory-grade equipment and spot-free water directly to your location.
+            We eliminate the compromises of traditional car washes and static detailing shops by bringing commercial detailing equipment and meticulous care directly to your location.
           </p>
         </div>
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { BUSINESS_CONFIG } from '../config/businessConfig';
+import { OptimizedImage } from './OptimizedImage';
 
 interface BrandLogoProps {
   variant?: 'navbar' | 'footer' | 'hero';
@@ -21,32 +22,32 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   const isFooter = variant === 'footer';
 
   return (
-    <div className={`flex items-center gap-3 select-none ${className}`}>
+    <div className={`flex items-center gap-2 sm:gap-3 select-none ${className}`}>
       {/* Official circular badge logo */}
-      <img
+      <OptimizedImage
         src={BUSINESS_CONFIG.officialLogoPath}
         alt="CREWW MOBILE AUTO DETAILING Official Logo Badge"
         className={`${
-          isFooter ? 'h-14 md:h-16' : 'h-11 md:h-13'
+          isFooter ? 'h-14 md:h-16' : 'h-9 sm:h-11 md:h-13'
         } w-auto object-contain shrink-0 filter drop-shadow-[0_2px_8px_rgba(14,165,233,0.25)] transition-transform duration-300 hover:scale-105`}
         loading="eager"
       />
 
       {showText && (
-        <div className="flex flex-col justify-center">
+        <div className="flex flex-col justify-center min-w-0">
           <div className="flex items-center">
             <span
               className={`font-heading font-black tracking-tight uppercase text-white ${
-                isFooter ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'
+                isFooter ? 'text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl'
               }`}
             >
               CREWW
             </span>
-            <span className="text-sky-400 font-heading font-black ml-1 text-xs md:text-sm">
+            <span className="text-sky-400 font-heading font-black ml-1 text-[11px] sm:text-xs md:text-sm">
               USA
             </span>
           </div>
-          <span className="text-[9px] md:text-[10px] font-semibold tracking-[0.22em] text-neutral-400 uppercase -mt-0.5">
+          <span className="text-[8px] sm:text-[9px] md:text-[10px] font-semibold tracking-[0.14em] sm:tracking-[0.22em] text-neutral-400 uppercase -mt-0.5 whitespace-nowrap">
             Mobile Auto Detailing
           </span>
         </div>

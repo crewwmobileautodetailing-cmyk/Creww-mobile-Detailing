@@ -1,20 +1,21 @@
 import React from 'react';
 import { BrandLogo } from './BrandLogo';
-import { Mail, MapPin, Shield, ArrowRight, Settings, Instagram, RotateCcw } from 'lucide-react';
+import { Mail, MapPin, Shield, ArrowRight, Instagram, RotateCcw } from 'lucide-react';
 import { BUSINESS_CONFIG } from '../config/businessConfig';
+import { LegalTab } from './LegalModal';
 
 interface FooterProps {
-  onOpenEmailConfig: () => void;
   onBookService: (serviceId?: string) => void;
   onReplayIntro: () => void;
   onOpenContact?: () => void;
+  onOpenLegal: (tab: LegalTab) => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
-  onOpenEmailConfig,
   onBookService,
   onReplayIntro,
   onOpenContact,
+  onOpenLegal,
 }) => {
   const currentYear = new Date().getFullYear();
 
@@ -32,11 +33,9 @@ export const Footer: React.FC<FooterProps> = ({
 
   return (
     <footer id="site-footer" className="bg-[#040508] border-t border-neutral-800 text-neutral-400 text-sm relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
         {/* Main Footer Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-12 border-b border-neutral-800/80">
-          
           {/* Brand Info & Mission (Col 1-4) */}
           <div className="lg:col-span-4 space-y-4">
             <div className="flex items-center">
@@ -44,12 +43,12 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
 
             <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed max-w-sm">
-              Professional mobile auto detailing engineered for discerning vehicle owners across the United States. Pure deionized water, independent mobile power, and showroom paint protection delivered directly to your driveway.
+              Professional mobile auto detailing delivered directly to your driveway or workplace across the United States. Commercial restoration tools, deep cabin sanitization, and showroom paint protection (on-site water &amp; electricity required).
             </p>
 
             <div className="flex items-center gap-2 text-xs text-sky-400 font-semibold">
-              <Shield className="w-4 h-4 text-sky-400" />
-              <span>Independent Mobile Fleet · Nationwide USA</span>
+              <Shield className="w-4 h-4 text-sky-400 shrink-0" />
+              <span>On-Site Mobile Fleet · Nationwide USA</span>
             </div>
           </div>
 
@@ -58,64 +57,66 @@ export const Footer: React.FC<FooterProps> = ({
             <h4 className="font-heading text-sm font-bold uppercase tracking-wider text-white">
               Navigation
             </h4>
-            <ul className="space-y-2 text-xs sm:text-sm">
-              <li>
-                <a
-                  href="#home"
-                  onClick={(e) => handleSmoothScroll(e, '#home')}
-                  className="hover:text-sky-400 transition-colors"
-                >
-                  Home
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#coverage"
-                  onClick={(e) => handleSmoothScroll(e, '#coverage')}
-                  className="hover:text-sky-400 transition-colors"
-                >
-                  Area Checker
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#pricing"
-                  onClick={(e) => handleSmoothScroll(e, '#pricing')}
-                  className="hover:text-sky-400 transition-colors"
-                >
-                  Packages & Pricing
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#reviews"
-                  onClick={(e) => handleSmoothScroll(e, '#reviews')}
-                  className="hover:text-sky-400 transition-colors"
-                >
-                  Customer Reviews
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#about"
-                  onClick={(e) => handleSmoothScroll(e, '#about')}
-                  className="hover:text-sky-400 transition-colors"
-                >
-                  About Us
-                </a>
-              </li>
-              {onOpenContact && (
+            <nav aria-label="Footer navigation">
+              <ul className="space-y-2 text-xs sm:text-sm">
                 <li>
-                  <button
-                    type="button"
-                    onClick={onOpenContact}
-                    className="hover:text-sky-400 transition-colors cursor-pointer text-left"
+                  <a
+                    href="#home"
+                    onClick={(e) => handleSmoothScroll(e, '#home')}
+                    className="hover:text-sky-400 transition-colors inline-block py-0.5"
                   >
-                    Contact Us
-                  </button>
+                    Home
+                  </a>
                 </li>
-              )}
-            </ul>
+                <li>
+                  <a
+                    href="#coverage"
+                    onClick={(e) => handleSmoothScroll(e, '#coverage')}
+                    className="hover:text-sky-400 transition-colors inline-block py-0.5"
+                  >
+                    Area Checker
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#pricing"
+                    onClick={(e) => handleSmoothScroll(e, '#pricing')}
+                    className="hover:text-sky-400 transition-colors inline-block py-0.5"
+                  >
+                    Packages &amp; Pricing
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#reviews"
+                    onClick={(e) => handleSmoothScroll(e, '#reviews')}
+                    className="hover:text-sky-400 transition-colors inline-block py-0.5"
+                  >
+                    Customer Reviews
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#about"
+                    onClick={(e) => handleSmoothScroll(e, '#about')}
+                    className="hover:text-sky-400 transition-colors inline-block py-0.5"
+                  >
+                    About Us
+                  </a>
+                </li>
+                {onOpenContact && (
+                  <li>
+                    <button
+                      type="button"
+                      onClick={onOpenContact}
+                      className="hover:text-sky-400 transition-colors cursor-pointer text-left py-0.5"
+                    >
+                      Contact Us
+                    </button>
+                  </li>
+                )}
+              </ul>
+            </nav>
           </div>
 
           {/* Packages Links (Col 7-9) */}
@@ -129,7 +130,7 @@ export const Footer: React.FC<FooterProps> = ({
                   <button
                     type="button"
                     onClick={() => onBookService(pkg.id)}
-                    className="text-left text-neutral-400 hover:text-sky-400 transition-colors cursor-pointer"
+                    className="text-left text-neutral-400 hover:text-sky-400 transition-colors cursor-pointer py-0.5"
                   >
                     {pkg.name} (${pkg.offerPrice})
                   </button>
@@ -139,29 +140,30 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
 
           {/* Booking CTA & Direct Online Contact (Col 10-12) */}
-          <div className="lg:col-span-3 space-y-4">
+          <div className="lg:col-span-3 space-y-4 min-w-0">
             <h4 className="font-heading text-sm font-bold uppercase tracking-wider text-white">
-              Online Dispatch
+              Online Scheduling
             </h4>
-            
+
             <p className="text-xs text-neutral-400 leading-relaxed">
-              Schedule your mobile detail in under 2 minutes. Choose your service, date, time, and on-site location.
+              Submit your mobile detail request in under 2 minutes. Choose your service, preferred date, time, and location.
             </p>
 
             <button
+              type="button"
               onClick={() => onBookService()}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 transition-all shadow-md shadow-sky-500/20 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 transition-all shadow-md shadow-sky-500/20 cursor-pointer min-h-[44px]"
             >
               <span>BOOK ON-SITE SERVICE</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
 
-            <div className="space-y-2 pt-1 text-xs text-neutral-300">
+            <div className="space-y-2 pt-1 text-xs text-neutral-300 min-w-0">
               {onOpenContact ? (
                 <button
                   type="button"
                   onClick={onOpenContact}
-                  className="flex items-center gap-2 text-neutral-300 hover:text-sky-400 transition-colors cursor-pointer text-left w-full group"
+                  className="flex items-center gap-2 text-neutral-300 hover:text-sky-400 transition-colors cursor-pointer text-left w-full group min-w-0"
                 >
                   <Mail className="w-4 h-4 text-sky-400 shrink-0 group-hover:scale-110 transition-transform" />
                   <span className="truncate">{BUSINESS_CONFIG.email} (Contact Us)</span>
@@ -169,7 +171,7 @@ export const Footer: React.FC<FooterProps> = ({
               ) : (
                 <a
                   href={`mailto:${BUSINESS_CONFIG.email}`}
-                  className="flex items-center gap-2 text-neutral-300 hover:text-sky-400 transition-colors"
+                  className="flex items-center gap-2 text-neutral-300 hover:text-sky-400 transition-colors min-w-0"
                 >
                   <Mail className="w-4 h-4 text-sky-400 shrink-0" />
                   <span className="truncate">{BUSINESS_CONFIG.email}</span>
@@ -191,47 +193,49 @@ export const Footer: React.FC<FooterProps> = ({
                 href={BUSINESS_CONFIG.instagram.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0c0e15] border border-neutral-800 text-xs font-semibold text-neutral-200 hover:text-sky-400 hover:border-sky-500/50 transition-all shadow-sm group"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0c0e15] border border-neutral-800 text-xs font-semibold text-neutral-200 hover:text-sky-400 hover:border-sky-500/50 transition-all shadow-sm group min-h-[44px]"
               >
                 <Instagram className="w-4 h-4 text-sky-400 group-hover:scale-110 transition-transform" />
                 <span>{BUSINESS_CONFIG.instagram.handle}</span>
               </a>
             </div>
           </div>
-
         </div>
 
-        {/* Bottom Legal & Functional Replay Control */}
+        {/* Bottom Legal & Functional Replay Control (No public Dispatch Portal) */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-500 gap-4 text-center sm:text-left">
           <div>
             © {currentYear} {BUSINESS_CONFIG.name}. All rights reserved.
           </div>
 
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4">
             <button
+              type="button"
               onClick={onReplayIntro}
-              className="flex items-center gap-1.5 text-neutral-400 hover:text-sky-400 transition-colors cursor-pointer py-1 min-h-[36px]"
+              className="flex items-center gap-1.5 text-neutral-400 hover:text-sky-400 transition-colors cursor-pointer py-1.5 px-2 rounded-lg min-h-[38px]"
               title="Replay cinematic car detailing intro animation"
             >
               <RotateCcw className="w-3.5 h-3.5 text-sky-400" />
               <span>REPLAY INTRO</span>
             </button>
-            <span>·</span>
+            <span aria-hidden="true">·</span>
             <button
-              onClick={onOpenEmailConfig}
-              className="flex items-center gap-1.5 text-neutral-400 hover:text-sky-400 transition-colors cursor-pointer py-1 min-h-[36px]"
-              title="Business Dispatch Log & Email Preparation"
+              type="button"
+              onClick={() => onOpenLegal('privacy')}
+              className="text-neutral-400 hover:text-sky-400 transition-colors cursor-pointer py-1.5 px-1.5 rounded-lg min-h-[38px]"
             >
-              <Settings className="w-3.5 h-3.5" />
-              <span>Dispatch Portal</span>
+              Privacy Policy
             </button>
-            <span>·</span>
-            <span className="py-1">Privacy Policy</span>
-            <span>·</span>
-            <span className="py-1">Terms of Service</span>
+            <span aria-hidden="true">·</span>
+            <button
+              type="button"
+              onClick={() => onOpenLegal('terms')}
+              className="text-neutral-400 hover:text-sky-400 transition-colors cursor-pointer py-1.5 px-1.5 rounded-lg min-h-[38px]"
+            >
+              Terms of Service
+            </button>
           </div>
         </div>
-
       </div>
     </footer>
   );
